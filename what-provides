@@ -1,0 +1,296 @@
+#!/bin/zsh -i
+
+# What-provides Z shell script
+# Written by Dylan Steinmetz <dtsteinm@mtu.edu>
+# Last updated: March 9, 2013
+#
+# Description: 
+#   Discovers what package provided a given command, 
+#   even if it is aliased, so long as it is not a
+#   shell built-in or shell function. 
+#
+#   This script runs interactively in order to 
+#   inherit the functions and aliases of $USER.
+#
+#   This script has only been tested with Z shell 4.3.File6=17-1
+#   and is not guaranteed to work with previous versions.
+#   If you run an older version of zsh by default, it is
+#   recommended you replace the first line with: #!/bin/zsh4 -i
+#
+#   Currently, the only package manager supported is dpkg. 
+#
+# Arguments: 
+#   Takes up to three (3) options and one (1) argument
+#   - -l: print info about package
+#   - -L: use pager for long output
+#   - -b: print just package name
+#   - command: executable to search for
+#
+# Return Status:
+#   0   success
+#   1   argument failure
+#   2   no package manager found
+#   3   command not found or not installed by manager
+#
+# Commands used:
+#   echo, awk, readlink, basename, dpkg, tr, less
+#
+# TODO:
+#   Port to Python
+#   Add GPL/License blurb?
+#   Add -h help option; -q/s quiet/silence option(s)
+#   Add rpm functionality 
+#   Add option: list files installed along with command
+#   Fix bypass zsh specific built-ins, like which
+#   Imp use precommand modifier to bypass alias, etc.
+#   Imp continue to report builtins with no binary equiv
+#   Imp loop alias/built-in block for multiple levels
+#   Imp bypass user-defined functions
+#   Clarify output from nope() function 
+#   --- Not sure how it could be clearer
+#   Comment multi-level alias checking block 
+#   --- Seems commented well enough
+#   Cleanup unused code (commented code) 
+#
+# Change log:
+#
+#   3/9:    -Changed options from 'vLp' to 'lLb' to better conform
+#           to expected Unix command line options
+#   2/24:   -Minor code cleanup (builtin block)
+#
+#   2/23:   -Compressed variable declarations
+#           -"function"ed functions
+#           -Slightly edited usage message
+#
+#   1/9:    -Used getopt for argument parsing
+#           -Commented out complex for...if...done 
+#           --argument checking block
+#
+#   10/28:  -Used command precommand modifier to bypass 
+#           --zsh builtin commands
+#
+#   10/23:  -Added multi-level alias checking 
+#
+#   10/22:  -Unknown options return error
+#           -Started work on multi-level alias
+#
+#   10/18:  -Script now runs interactively
+#           -Uncommented previously broken func chk
+#           -Updated usage message to reflect new option
+#
+#   10/17:  -Redirected errors to stderr
+#           -Moved package error messages to nope()
+#           -Added paging option (-L) for -v
+#           -Removed extraneous checks in arg block
+#           -Added single which failure checking 
+#           --performs function checking, too
+#           ---(#'ed out broken check in alias block)
+#           -Added homedir/bin checking
+#           -Simplified getting of package name
+#           --(dpkg -S only one once now, >perf)
+#           -Commented out dpkg/rpm case switches
+#           -Standardized normal output
+#
+#   pre-10/17: no records (previously written as a shell function)
+#
+########################################################
+
+# Info messages 
+# Usage... redirect stdout to file descriptor 2 (stderr)
+function usage(){ 
+	echo "Usage: what-provides [-l|-L|-b] [command]" >&2
+	echo "Options:" >&2
+	echo "\t-l\tprint information about the package" >&2
+	echo "\t-L\tprint info about package through pager" >&2
+	#echo "\t-l\tprint files installed along with command" >&2 
+	echo "\t-b\tprint only the relevant package name" >&2
+	#echo "\t\t(this is ignored when -l is present)" >&2 
+}
+
+# Nope, nope, nope 
+function nope(){ echo "No packages found for the $comm command" >&2
+	echo "Are you sure that it's installed by $manager?" >&2 }
+
+# If no arguments were provided, print usage message
+if [[ $# -eq 0 ]]; then usage; return 1; fi
+
+# Check for dpkg/rpm
+# Currently only checks if dpkg is installed; quits if not
+# If dpkg is installed, use that; if no, check for rpm
+if [[ -f /usr/bin/dpkg ]]; then declare -r manager='dpkg'
+#elif [[ -f /usr/bin/rpm ]]; then declare -r manager='rpm'
+else echo "No known package manager found!" >&2; return 2; fi
+
+# Declare variables 
+integer v p a
+integer page=1; #declare -i list
+declare exe file newexe
+declare oldalias package comm
+
+# Arguments 
+
+# Parse Arguments
+
+# Parse Options
+# Store output of getopt in $TEMP 
+# Short options are v, L and p; name is "what-provides"
+TEMP=$(getopt -o lLb -n 'what-provides' -- "$@")
+# If something went wrong with getopt (non-0 exit status)
+# print usage message and exit with arg error status
+if [[ $? != 0 ]]; then usage; return 1; fi
+# This is "important"
+eval set -- "$TEMP"
+
+# Evaluate Options
+# Keep going; loop will break on -- from getopt
+while true; do
+	case "$1" in
+        # I could re-add command checking from old 
+        # argument parsing for loop here, but that 
+        # seems like a pain
+		-l) v=1; shift;;
+		-L) v=1;page=0; shift;;
+		-b) p=1; shift;;
+		--) shift; break;;
+		*) echo "Internal Error!"; return 1;;
+	esac
+done
+
+# Get command
+# I'm not sure how this works, but it seems to
+for arg do exe=$arg; file=$(which $exe); done
+comm=$exe
+
+# Old Option Parsing 
+# For each argument... Check to see if we need info
+#for i in $@; do
+	#if [[ $i = \-v ]]; then v=1
+		# If we need info, but no other args: usage; else, set v flag
+		#if [[ $# -eq 1 ]]; then usage; return 1; else v=1; fi
+	# Using the system pager (less/more)?
+	#elif [[ $i = \-L ]]; then page=0
+	#then if [[ $v -eq 1 && $# -gt 2 ]] page=0
+	# Returning just the package name?
+	#elif [[ $i = \-p ]]; then p=1
+		#then if [[ $# -eq 1 ]]; then usage; return 1; else p=1; fi
+	# No info this time? Just get the command, and find binary
+	# i.e. command is 'vi', which returns '/usr/bin/vi'
+	#elif [[ $i = \-* ]]; then usage; return 1 
+	#else exe=$i; file=$(which $exe); fi 
+	#elif [[ $i = [^-]* ]]; then exe=$i; file=$(which $exe); fi 
+#done # Done with arguments
+
+# User error
+# If user entered no command, print usage
+if [[ -z $file ]]; then usage; return 1; fi
+# If which couldn't find command, give up
+# i.e. foo
+if [[ $file = "$comm not found" ]]; then nope; return 3; fi
+
+# Check for non-package commands 
+
+# Check for alias/built-in/function
+# If the second field from the which output is 
+# the word 'aliased', we have an alias
+# i.e. file='mv: aliased to mv -iv'
+if [[ $(echo $file | awk '{print $2}') = 'aliased' ]]
+then {  a=1 # Set alias flag
+		# Find real file
+		until [[ -f $file ]] #|| -f $(echo $file | awk '{print $2}') ]]; do {
+		do {
+			# Sudo alias workaround
+			newexe=$(echo $file | awk '{print $4}')
+			if [[ $newexe = 'sudo' ]] newexe=$(echo $file | awk '{print $5}')
+			# Copy and workaround alias (unneeded?) 
+			# Store current alias of $exe, then remove the alias
+			# Fourth awk field is first command of alias
+			# i.e. oldalias='mv'
+			oldalias=$(echo $file | awk '{print $4}')
+			# Fifth field on is rest of alias
+			# Start at 5th field, increment through each, until we
+			# reach the final field (indicated by awk var NF)
+			for ((i=5; $i<=$(echo $file | awk '{print NF}'); i++)) 
+			# Add each field onto the $oldalias variable
+			# i.e. oldalias='mv -iv'
+			do oldalias="$oldalias $(echo $file | awk "{print \$$i}")"
+			# Remove the alias, and get the actual binary with which
+			# i.e. unalias mv; file=$(which mv)
+			done; unalias $exe
+			file=$(which $newexe); exe=$newexe } done } 
+# Shell Function workaround
+# If the second field of the first record is '()',
+# the requested command is a shell function
+# `awk 'NR < 2 {print $2}': while the number of records (NR)
+# processed is less than 2, print the second field of each record
+elif [[ $(echo $file | awk 'NR < 2 {print $2}') = '()' ]]
+then echo "$comm: shell function"; return 3
+# Shell Builtin workaround
+# If the third field from which output is 'built-in',
+# i.e. file='alias: shell built-in command'
+# the requested command is a built-in of the shell
+elif [[ $(echo $file | awk '{print $3}') = 'built-in' ]]
+	then file=$(command which $exe || echo $file; return 3)
+fi # End check for alias/built-in/function
+
+# Symlink 
+# While $file is a symbolic link to another file,
+# get the target of the symlink stored in $file using readlink
+# i.e. /usr/bin/vi > /etc/alternatives/vi > /usr/bin/vim.basic
+while [[ -L $file ]]; do file=$(readlink $file)
+	file=$(which $file); done
+
+# Home directory
+# Check to see if this is in the user's home directory
+if [[ $(dirname $file) = "$HOME/bin" ]] 
+then echo "$comm: $HOME/bin/$(basename $file)"; return 3; fi
+
+# dpkg/rpm (unused) 
+# Do something different depending on what package manager was installed
+# Only runs through dpkg steps, uncomment elif above to change
+#case $manager in 
+#dpkg) {
+# Check to see if the file is listed in any packages
+# If it is, get the package name
+#package=$(dpkg -S $file)
+#if dpkg -S $file &>| /dev/null; then 
+#if [[ $(echo $package | awk '{print $1}') -ne 'dpkg-query' ]]
+# Searches database for a package that installs the 
+# corresponding binary (i.e. /usr/bin/vim.basic)
+# `awk '{print $1}'` prints just the package name
+# `tr -d ':'` deletes the trailing colon from the field
+#package=$(dpkg -S $file | awk '{print $1}' | tr -d ':'); fi };;
+## Verify this works! ##
+#rpm) package=$(rpm -q -f $file) esac
+
+# Get package name 
+# Get first field from stdout, delete :, redirect stderr to null
+package=$(dpkg -S $file | awk '{print $1}' | tr -d ':') 2&>|/dev/null
+
+# Results time
+## Add rpm functionality here! ##
+# If package is not null, success; otherwise, print friendly error
+if [[ -n $package ]]; then
+	# Verbose output
+	# If we need info, print info
+	if [[ $v -eq 1 ]]; then (
+		if [[ $page -eq 0 ]] dpkg -s $package | pager
+		if [[ $page -eq 1 ]] dpkg -s $package )
+		# Do something different for dpkg and rpm
+		# Only runs through dpkg steps, uncomment elif above to change
+		#case $manager in dpkg) dpkg -s $package | pager );;
+		#rpm) rpm -q --info $package | pager; esac )
+	# Terse output
+	# If we only want the name of the package, print nothing else 
+	elif [[ $p -eq 1 ]]; then echo $package; else
+	# Normal output
+	# Otherwise, just print message
+	echo -n "$comm: $package"; if [[ $a -eq 1 ]] {echo " (aliased)"} else {echo}; fi
+else nope; return 3; fi 
+
+# Housekeeping
+# If we unaliased something, put it back
+# i.e. alias 'mv'='mv -iv'
+if [[ -n $oldalias ]]; then
+	alias $comm=$oldalias; fi 
+
+# vim: set ts=4 sts=4 sw=4:
