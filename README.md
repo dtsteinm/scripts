@@ -1,2 +1,2 @@
-python_scripts
+scripts
 ==============
