@@ -3,6 +3,11 @@
 import os
 
 
+# vim_undo Python module
+# Written by Dylan Steinmetz <dtsteinm@gmail.com>
+# Last updated: March 15, 2013
+
+
 """Detects unusable undofiles in Vim's undodir; for example""" \
         """user has moved or deleted previously edited files."""
 

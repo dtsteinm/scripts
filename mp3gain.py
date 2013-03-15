@@ -5,7 +5,7 @@ import subprocess
 import re
 
 # mp3gain Python module
-# Written by Dylan Steinmetz <dtsteinm@mtu.edu>
+# Written by Dylan Steinmetz <dtsteinm@gmail.com>
 # Last updated: March 5, 2013
 
 """ Recursively tag MP3 files with ReplayGain attributes """ \
