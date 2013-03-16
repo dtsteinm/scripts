@@ -1,11 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import os
 import subprocess
 import re
 
 # mp3gain Python module
-# Written by Dylan Steinmetz <dtsteinm@gmail.com>
+# Copyright © 2013 Dylan Steinmetz <dtsteinm@gmail.com>
+# This work is free. You can redistribute it and/or modify it under the
+# terms of the Do What The Fuck You Want To Public License, Version 2,
+# as published by Sam Hocevar. See the COPYING file for more details.
 # Last updated: March 5, 2013
 
 """ Recursively tag MP3 files with ReplayGain attributes """ \
