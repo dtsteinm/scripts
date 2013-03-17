@@ -15,7 +15,7 @@ import re
         """using the mp3gain utility."""
 
 
-# walk looks for directories containing mp3 files, 
+# walk looks for directories containing mp3 files,
 # and calls mp3gain() when we have something to do.
 # TODO: Add messages displaying progress of entire file structure.
 def walk(start_dir):
@@ -82,7 +82,7 @@ def walk(start_dir):
         raise
     # Made it out of the for loop with no additional errors.
     else:
-        # Print a message indicating whether 
+        # Print a message indicating whether
         # or not files had been processed.
         if __flag is True:
             print '\nFinished processing files!'
@@ -122,8 +122,8 @@ def mp3gain(directory):
             directory, '/*.mp3'], shell=True)
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
-        # TODO: Currently, mp3gain seems to _always_ 
-        #       return a zero on exit; I need to use 
+        # TODO: Currently, mp3gain seems to _always_
+        #       return a zero on exit; I need to use
         #       something along the lines of Popen
         #       and parse the output to display any
         #       meaningful messages to the user.
@@ -189,7 +189,7 @@ class ProcError(Error):
 
     def __str__(self):
         return repr(self.dir_)
-    
+
 
 class ExecError(Error):
     """Exception raised when mp3gain utility is not installed on system.
@@ -205,6 +205,7 @@ class ExecError(Error):
 
 # What do we want to import using 'from mp3gain import *'
 __all__ = ['walk', 'mp3gain']
+__version__ = '0.2'
 
 # If we were called from command line...
 if __name__ == "__main__":
