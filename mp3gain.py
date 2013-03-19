@@ -118,6 +118,7 @@ def mp3gain(directory):
         # any APEv2 ReplayGain tags to IDv3 tags),
         # preserving original files' ctime, etc.
         # TODO: Really want to see if this changes files
+        # NOTE: Use subprocess.check_output() instead of .call()
         proc = subprocess.call(['/usr/bin/mp3gain -s i -p ',
             directory, '/*.mp3'], shell=True)
         # If /usr/bin/mp3gain returned something other

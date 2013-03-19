@@ -12,18 +12,29 @@ import os
 
 
 """Explanation here."""
-# TODO: Consider writing this OO with class
+# NOTE: Consider writing this OO with class
+#       Map out functions to ensure flow is logical
 
 
+#class MediaList():
+#    def __init__(self, start_dir=os.getcwd()):
+#        self.start_dir = start_dir
+
+
+# FIXME: Main control function; call find_files, pass info onto 
+#        mkpls or mkm3u as requested by user; also, interactive?
 def make_playlist(start_dir=os.getcwd(), playlist_type='pls'):
     """Create media playlist(s) for specified directory and playlist"""\
             """type.
-    
+
     Attributes:
         start_dir -- directory from which to start; if None, prompt user?
         playlist_type -- type of playlist to create; either 'pls' or 'm3u'
     """
 
+
+# FIXME: Write find_files; place looping logic (os.walk) here; pack
+#        basedir and sorted list to be sent to mk{pls,m3u} functions
 def find_files(dir_=os.getcwd()):
     """Finds directories that contain media files from a given starting"""\
             """point, and tracks the lists.
@@ -34,6 +45,7 @@ def find_files(dir_=os.getcwd()):
     pass
 
 
+# TODO: Write mkpls function
 def mkpls(file_list):
     """Creates a PLS format playlist file from a list of filenames."""\
 
@@ -43,6 +55,7 @@ def mkpls(file_list):
     pass
 
 
+# TODO: Write mkm3u function
 def mkm3u(file_list):
     """Creates a M3U format playlist file from a list of filenames."""\
 
@@ -55,8 +68,10 @@ def mkm3u(file_list):
 # TODO: The looping sorting should probably be split up so that
 #       we get a list for each directory that contains media files,
 #       rather the the list from the final directory.
+#       Move the looping logic to the find_files function.
 # FIXME: We also need to return the basedir associated with each list
 #        in order to get absolute paths in the mkpls and mkm3u functions.
+#        (pack it in a tuple?)
 def sort_files(current_dir):
     """Returns sorted list of files in passed directory.
 
@@ -87,6 +102,7 @@ def tryconvert(filename):
 
         # Finds and returns (as an integer) a sequence number from
         # a complex filename. NOTE: May not work with all formats.
+        # NOTE: This can probably be cleaned up for readability.
         # Explanation:
         # - filename[::-1]: reverse the string; essentially starts
         #                     re.sub from last character
@@ -115,6 +131,7 @@ class Error(Exception):
     pass
 
 
+# FIXME: Rename as necessary for errors thrown in this module.
 class DirError(Error):
     """Exception raised for errors relating to directory """ \
             """existence.
@@ -132,6 +149,7 @@ class DirError(Error):
         return repr(self.dir_)
 
 
+# FIXME: Rename as necessary for errors thrown in this module.
 class FileError(Error):
     """Exception raised for errors relating to file """ \
             """existence.
@@ -150,13 +168,14 @@ class FileError(Error):
 
 
 __all__ = []
-__version__ = '0.01'
+__version__ = '0.02'
 
 # If we were called from command line...
 if __name__ == "__main__":
     import sys
     import os
 
+    # FIXME: Needs to be re-written to work for this module.
     # TODO: Put in some usage message on bad arg list.
     # User can get to work right away number of arguments.
     if len(sys.argv) == 2:
@@ -166,5 +185,6 @@ if __name__ == "__main__":
     else:
         #prune()
         pass
+
 
 # vim: set ts=4 sts=4 sw=4:
