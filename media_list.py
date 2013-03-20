@@ -190,7 +190,7 @@ class FileError(Error):
 
 __all__ = ['makeplaylist', 'findfiles', 'sortfiles',
            'getseqnum', 'mkpls', 'mkm3u']
-__version__ = '0.02'
+__version__ = '0.03'
 
 # If we were called from command line...
 if __name__ == "__main__":
