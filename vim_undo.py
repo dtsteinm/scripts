@@ -177,7 +177,7 @@ class FileError(Error):
             """existence.
 
     Attributes:
-        file_ -- directory which caused the error
+        file_ -- filename which caused the error
     """
 
     def __init__(self, file_):
