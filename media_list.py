@@ -22,8 +22,8 @@ import re
 #        self.start_dir = start_dir
 
 
-# FIXME: Main control function; call findfiles, pass info onto
-#        mkpls or mkm3u as requested by user; also, interactive?
+# TODO: Interactivity when no playlist_type specified?
+# TODO: Accept multiple values for playlist type.
 def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     """Create media playlist(s) for specified directory and playlist """\
             """type.
@@ -32,57 +32,73 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
         start_dir -- directory from which to start; if None, prompt user?
         playlist_type -- type of playlist to create; either 'pls' or 'm3u'
     """
-    pass
+
+    start_dir = start_dir.strip()
+    playlist_type = playlist_type.strip()
+
+    if playlist_type is ('pls'):
+        PLS = True
+        M3U = False
+    if playlist_type is ('m3u'):
+        PLS = False
+        M3U = True
+
+    for basedir, pathnames, files in os.walk(start_dir):
+        if PLS:
+            mkpls([basedir, sortfiles(files)])
+        if M3U:
+            mkm3u([basedir, sortfiles(files)])
 
 
 # FIXME: Write findfiles; place looping logic (os.walk) here; pack
 #        basedir and sorted list to be sent to mk{pls,m3u} functions
-def findfiles(dir_=os.getcwd()):
-    """Finds directories that contain media files from a given starting """\
-            """point, and tracks the lists.
+# def findfiles(dir_=os.getcwd()):
+    # """Finds directories that contain media files from a given starting """\
+            # """point, and tracks the lists.
 
-    Attributes:
-        dir_ -- directory in which to search for media files; cwd by default
-    """
-    pass
+    # Attributes:
+        # dir_ -- directory in which to search for media files; cwd by default
+    # """
+
+    # for basedir, pathnames, files in os.walk(dir_):
+        # return [basedir, sortfiles(files)]
 
 
-# TODO: Write mkpls function
+# FIXME: Write mkpls function
 def mkpls(*file_list):
     """Creates a PLS format playlist file from a list of filenames.
 
     Attributes:
         file_list -- tuple containg base directory and sorted list of files
     """
+
+    print 'making pls'
+    print file_list
     pass
 
 
-# TODO: Write mkm3u function
+# FIXME: Write mkm3u function
 def mkm3u(*file_list):
     """Creates a M3U format playlist file from a list of filenames.
 
     Attributes:
         file_list -- tuple containg base directory and sorted list of files
     """
+
+    print 'making m3u'
+    print file_list
     pass
 
 
-# TODO: The looping sorting should probably be split up so that
-#       we get a list for each directory that contains media files,
-#       rather the the list from the final directory.
-#       Move the looping logic to the findfiles function.
-# FIXME: We also need to return the basedir associated with each list
-#        in order to get absolute paths in the mkpls and mkm3u functions.
-#        (pack it in a tuple?)
-def sortfiles(current_dir):
+# FIXME: Remove hidden (dotfiles) from list
+def sortfiles(files):
     """Returns sorted list of files in passed directory.
 
     Attributes:
-        current_dir -- directory from which we should look for files
+        files -- unsorted list of filenames
     """
-    for basedir, pathnames, files in os.walk(current_dir):
-        sorted_list = sorted(files, key=lambda number: getseqnum(number))
-    return sorted_list
+
+    return sorted(files, key=lambda number: getseqnum(number))
 
 
 def getseqnum(filename):
@@ -129,7 +145,8 @@ def getseqnum(filename):
 #       Also, fix try...excepts to match same conventions.
 class Error(Exception):
     """Base class for exceptions caused by methods in """ \
-            """the media_list module."""
+            """the media_list module.
+    """
     pass
 
 
@@ -143,6 +160,7 @@ class DirError(Error):
     """
 
     def __init__(self, dir_):
+        Exception.__init__(self)
         self.dir_ = dir_
         # print '\nException: DirError:'
         # print 'Directory does not exist:', self.dir_
@@ -161,6 +179,7 @@ class FileError(Error):
     """
 
     def __init__(self, file_):
+        Exception.__init__(self)
         self.file_ = file_
         # print '\nException: FileError:'
         # print 'File does not exist:', self.file_
@@ -190,5 +209,4 @@ if __name__ == "__main__":
         #prune()
         pass
 
-
-# vim: set ts=4 sts=4 sw=4:
+# vim: set ts=4 sts=4 sw=4 et:
