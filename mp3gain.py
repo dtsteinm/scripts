@@ -40,6 +40,8 @@ def walk(start_dir):
 
     try:
         # Check to see if the mp3gain utility is installed.
+        # FIXME: Unwanted version output
+        # NOTE: Use subprocess.check_output()/call() instead of .system()
         if os.system('mp3gain -v') is not 0:
             raise ExecError()
         # Check to make sure we're working in a real directory.
@@ -59,7 +61,8 @@ def walk(start_dir):
                     # Call mp3gain when we hit a
                     # directory containing MP3s.
                     if re.match('^.*mp3$', __file_) is not None:
-                        mp3gain(__basedir)
+                        if mp3gain(__basedir) is 1:
+                            raise ProcError(__basedir)
                         # Raise our flag
                         __flag = True
                         # Keep walking...
@@ -74,7 +77,8 @@ def walk(start_dir):
         # End of os.walk() loop
     # Quit on DirError not caught inside for loop.
     # Initial directory doesn't exist, so there's nothing to do.
-    except (DirError, ExecError):
+    # FIXME: Do I really need to return 1 here? Output is kinda ugly.
+    except (DirError, ExecError, ProcError):
         return 1
     # Unexpected error; let's find out what it is.
     except:
@@ -135,6 +139,7 @@ def mp3gain(directory):
     # successfully (i.e. directory does not contain any MP3s).
     # Since this can be called by itself, let's also
     # raise directory errors right here, too.
+    # FIXME: Do I really need to return 1 here? Output is kinda ugly.
     except (ProcError, DirError):
         # Return a non-zero result to indicate failure.
         return 1
@@ -166,6 +171,7 @@ class DirError(Error):
     """
 
     def __init__(self, dir_):
+        Exception.__init__(self)
         self.dir_ = dir_
         print '\nException: DirError:'
         print 'Directory does not exist:', self.dir_
@@ -183,6 +189,7 @@ class ProcError(Error):
     """
 
     def __init__(self, dir_):
+        Exception.__init__(self)
         self.dir_ = dir_
         print '\nException: ProcError:'
         print 'There was an error while processing:'
@@ -221,4 +228,4 @@ if __name__ == "__main__":
     else:
         walk(os.getcwd())
 
-# vim: set ts=4 sts=4 sw=4:
+# vim: set ts=4 sts=4 sw=4 et:

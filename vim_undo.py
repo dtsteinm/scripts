@@ -163,6 +163,7 @@ class DirError(Error):
     """
 
     def __init__(self, dir_):
+        Exception.__init__(self)
         self.dir_ = dir_
         # print '\nException: DirError:'
         # print 'Directory does not exist:', self.dir_
@@ -180,6 +181,7 @@ class FileError(Error):
     """
 
     def __init__(self, file_):
+        Exception.__init__(self)
         self.file_ = file_
         # print '\nException: FileError:'
         # print 'File does not exist:', self.file_
@@ -203,4 +205,4 @@ if __name__ == "__main__":
     else:
         prune()
 
-# vim: set ts=4 sts=4 sw=4:
+# vim: set ts=4 sts=4 sw=4 et:
