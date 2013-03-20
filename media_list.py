@@ -9,14 +9,14 @@ import re
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: March 18, 2013
+# Last updated: March 19, 2013
 
 
-"""Explanation here."""
-# NOTE: Consider writing this OO with class
+"""Module with functions to simplify the sorting of media files with """\
+        """complex filenames, and create playlist files for playback."""
+
+# NOTE: Consider writing this OO with class (might be too late for that)
 #       Map out functions to ensure flow is logical
-
-
 #class MediaList():
 #    def __init__(self, start_dir=os.getcwd()):
 #        self.start_dir = start_dir
@@ -33,16 +33,28 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
         playlist_type -- type of playlist to create; either 'pls' or 'm3u'
     """
 
+    # Clean up user input
     start_dir = start_dir.strip()
     playlist_type = playlist_type.strip()
 
+    # TODO: Verify start_dir exists
+
+    # TODO: roll this into for loop
     if playlist_type is ('pls'):
         PLS = True
         M3U = False
     if playlist_type is ('m3u'):
         PLS = False
         M3U = True
+    # TODO: What to do with no valid input?
 
+    # TODO: Throw this in a try...except
+    # TODO: throw some checking in here to only make a playlist
+    #       if basedir contains media files (mkv, avi, mp3, etc.)
+    # Start in startdir, and and create a pls and/or m3u playlist
+    # file for directories containing valid media files. Send the
+    # current basedir and the list returned from sortedfiles()
+    # for the creation of playlist files with absolute paths.
     for basedir, pathnames, files in os.walk(start_dir):
         if PLS:
             mkpls([basedir, sortfiles(files)])
@@ -50,7 +62,7 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
             mkm3u([basedir, sortfiles(files)])
 
 
-# FIXME: Write findfiles; place looping logic (os.walk) here; pack
+# TODO: Write findfiles; place looping logic (os.walk) here; pack
 #        basedir and sorted list to be sent to mk{pls,m3u} functions
 # def findfiles(dir_=os.getcwd()):
     # """Finds directories that contain media files from a given starting """\
@@ -66,7 +78,8 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
 
 # FIXME: Write mkpls function
 def mkpls(*file_list):
-    """Creates a PLS format playlist file from a list of filenames.
+    """Creates a PLS format playlist file from a base directory and a """\
+            """list of filenames.
 
     Attributes:
         file_list -- tuple containg base directory and sorted list of files
@@ -79,7 +92,8 @@ def mkpls(*file_list):
 
 # FIXME: Write mkm3u function
 def mkm3u(*file_list):
-    """Creates a M3U format playlist file from a list of filenames.
+    """Creates a M3U format playlist file from a base directory and a """\
+            """list of filenames.
 
     Attributes:
         file_list -- tuple containg base directory and sorted list of files
@@ -96,6 +110,10 @@ def sortfiles(files):
 
     Attributes:
         files -- unsorted list of filenames
+    >>> sortfiles(['Another_Testfile_No._23_[CRC32CRC].ext',"""\
+            """'Testfile_No._22_[CRC32CRC].ext'])
+    ['Testfile_No._22_[CRC32CRC].ext', """\
+            """'Another_Testfile_No._23_[CRC32CRC].ext']
     """
 
     return sorted(files, key=lambda number: getseqnum(number))
@@ -111,6 +129,8 @@ def getseqnum(filename):
     Examples:
     >>> getseqnum('Testfile_No._22_[CRC32CRC].ext')
     22
+    >>> getseqnum('Another_Testfile_No._23_[CRC32CRC].ext')
+    23
     """
 
     # If filename does not contain a non-CRC number, re.findall(...)[0]
