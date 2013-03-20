@@ -18,7 +18,7 @@ import re
 # walk looks for directories containing mp3 files,
 # and calls mp3gain() when we have something to do.
 # TODO: Add messages displaying progress of entire file structure.
-def walk(start_dir):
+def walk(start_dir=os.getcwd()):
     """Traverses the filesystem structure, looking for """ \
             """directories containing MP3 files, and """ \
             """calls mp3gain() when appropriate.
@@ -58,9 +58,10 @@ def walk(start_dir):
                     # is a real directory (it should be)
                     if os.path.isdir(__basedir) is False:
                         raise DirError(__basedir)
+                    # TODO: Skip on hidden files (dotfiles)
                     # Call mp3gain when we hit a
                     # directory containing MP3s.
-                    if re.match('^.*mp3$', __file_) is not None:
+                    if re.match(r'^.*\.mp3$', __file_) is not None:
                         if mp3gain(__basedir) is 1:
                             raise ProcError(__basedir)
                         # Raise our flag
@@ -103,7 +104,7 @@ def walk(start_dir):
 
 # mp3gain is where we do our actual work.
 # TODO: Add messages for progress on a directory.
-def mp3gain(directory):
+def mp3gain(directory=os.getcwd()):
     """Attach IDv3 ReplayGain tags for the MP3 files in """ \
             """the specified directory.
 
@@ -213,7 +214,7 @@ class ExecError(Error):
 
 # What do we want to import using 'from mp3gain import *'
 __all__ = ['walk', 'mp3gain']
-__version__ = '0.2'
+__version__ = '0.3'
 
 # If we were called from command line...
 if __name__ == "__main__":
