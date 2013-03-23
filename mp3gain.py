@@ -49,7 +49,7 @@ def walk(start_dir=os.getcwd()):
         # Iterate filesystem structure, checking each list of files contained
         # in each directory for anything that resembles an MP3 file.
         for basedir, pathnames, files in os.walk(start_dir):
-            # Skip on hidden directories (dotfiles)
+            # Skip hidden directories (dotfiles)
             for pathname in pathnames:
                 if dot_check(pathname):
                     pathnames.remove(pathname)
@@ -209,7 +209,7 @@ class ExecError(Error):
 
 # What do we want to import using 'from mp3gain import *'
 __all__ = ['walk', 'mp3gain']
-__version__ = '0.4'
+__version__ = '0.5'
 
 # If we were called from command line...
 if __name__ == "__main__":
