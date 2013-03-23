@@ -37,7 +37,9 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     start_dir = start_dir.strip()
     playlist_type = playlist_type.strip()
 
-    # TODO: Verify start_dir exists
+    # TODO: Verify start_dir exists (start a try...except block)
+    if os.path.isdir(start_dir) is False:
+        pass
 
     # TODO: roll this into for loop
     if playlist_type is ('pls'):
@@ -48,14 +50,28 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
         M3U = True
     # TODO: What to do with no valid input?
 
+    # Anonymous function to check for dotfiles
+    dot_check = lambda name: re.match(r'^\..*$', name)
+
+    # List of known media file extensions
+    media_exts = ['mkv','avi','wmv','mp4','mp3','flac','ogg']
+
+
     # TODO: Throw this in a try...except
-    # TODO: throw some checking in here to only make a playlist
-    #       if basedir contains media files (mkv, avi, mp3, etc.)
     # Start in startdir, and and create a pls and/or m3u playlist
     # file for directories containing valid media files. Send the
     # current basedir and the list returned from sortedfiles()
     # for the creation of playlist files with absolute paths.
     for basedir, pathnames, files in os.walk(start_dir):
+        # Skip hidden directories (dotfiles)
+        for pathname in pathnames:
+            if dot_check(pathname):
+                pathnames.remove(pathname)
+            for file_ in files:
+                if dot_check(file_):
+                    files.remove(file_)
+        # TODO: throw some checking in here to only make a playlist
+        #       if basedir contains media files (mkv, avi, mp3, etc.)
         if PLS:
             mkpls([basedir, sortfiles(files)])
         if M3U:
@@ -64,20 +80,20 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
 
 # TODO: Write findfiles; place looping logic (os.walk) here; pack
 #        basedir and sorted list to be sent to mk{pls,m3u} functions
-# def findfiles(dir_=os.getcwd()):
-    # """Finds directories that contain media files from a given starting """\
-            # """point, and tracks the lists.
-
-    # Attributes:
-        # dir_ -- directory in which to search for media files; cwd by default
-    # """
-
-    # for basedir, pathnames, files in os.walk(dir_):
-        # return [basedir, sortfiles(files)]
+#def findfiles(dir_=os.getcwd()):
+#    """Finds directories that contain media files from a given starting """\
+#            """point, and tracks the lists.
+#
+#    Attributes:
+#        dir_ -- directory in which to search for media files; cwd by default
+#    """
+#
+#    for basedir, pathnames, files in os.walk(dir_):
+#        return [basedir, sortfiles(files)]
 
 
 # FIXME: Write mkpls function
-def mkpls(*file_list):
+def mkpls(file_list):
     """Creates a PLS format playlist file from a base directory and a """\
             """list of filenames.
 
@@ -91,7 +107,7 @@ def mkpls(*file_list):
 
 
 # FIXME: Write mkm3u function
-def mkm3u(*file_list):
+def mkm3u(file_list):
     """Creates a M3U format playlist file from a base directory and a """\
             """list of filenames.
 
@@ -104,7 +120,7 @@ def mkm3u(*file_list):
     pass
 
 
-# FIXME: Remove hidden (dotfiles) from list
+# TODO: Make it easier to get a list from sortfiles (?)
 def sortfiles(files):
     """Returns sorted list of files in passed directory.
 
