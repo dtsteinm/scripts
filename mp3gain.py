@@ -69,8 +69,7 @@ def walk(start_dir=os.getcwd()):
                         # Raise our flag
                         flag = True
                         # This directory is done, so we can go to the next one.
-                        # FIXME: continues to next file_, not next basedir
-                        continue
+                        break
                 # If we looked at a non-existent directory (deleted while
                 # running?), just go on to the next one on our walk
                 except DirError:
