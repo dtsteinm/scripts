@@ -48,22 +48,32 @@ def walk(start_dir=os.getcwd()):
         if os.path.isdir(__start_dir) is False:
             raise DirError(__start_dir)
 
+        # Anonymous function to check for dotfiles
+        __dot_check = lambda name: re.match(r'^\..*$', name) 
+
         # Iterate filesystem structure, checking each
         # list of files contained in each directory
         # for anything that resembles an MP3 file.
         for __basedir, __pathnames, __files in os.walk(__start_dir):
+            # Skip on hidden directories (dotfiles)
+            for __pathname in __pathnames:
+                if __dot_check(__pathname):
+                    __pathnames.remove(__pathname)
             for __file_ in __files:
                 try:
                     # Better safe than sorry: let's verify
                     # is a real directory (it should be)
                     if os.path.isdir(__basedir) is False:
                         raise DirError(__basedir)
-                    # TODO: Skip on hidden files (dotfiles)
+                    # Skip on hidden files
+                    if __dot_check(__file_):
+                        continue
                     # Call mp3gain when we hit a
                     # directory containing MP3s.
                     if re.match(r'^.*\.mp3$', __file_) is not None:
                         if mp3gain(__basedir) is 1:
                             raise ProcError(__basedir)
+                        print __file_
                         # Raise our flag
                         __flag = True
                         # Keep walking...
