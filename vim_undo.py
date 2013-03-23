@@ -15,7 +15,7 @@ import os
         """user has moved or deleted previously edited files."""
 
 
-def prune(__start_dir=os.path.join(os.getenv('HOME'), '.vim')):
+def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
 
     """Detects unusable undofiles in user's Vim undodir.
 
@@ -36,24 +36,24 @@ def prune(__start_dir=os.path.join(os.getenv('HOME'), '.vim')):
     # Outer try block
     try:
         # Check to see if provided or default directory exists.
-        if not os.path.isdir(__start_dir):
+        if not os.path.isdir(start_dir):
             # Throw custom exception if it does not.
-            raise DirError(__start_dir)
+            raise DirError(start_dir)
 
-        # Initialize __total_size to store the amount of disk space
+        # Initialize total_size to store the amount of disk space
         # saved by deleting unusable vimfiles.
-        __total_size = 0
+        total_size = 0
 
         # Traverse the file system starting with provided or default
         # directory, looking for unusable undo- and viewfiles.
-        for __basedir, __pathnames, __files in os.walk(__start_dir):
+        for basedir, pathnames, files in os.walk(start_dir):
 
             # We're only concerned with files located in undo- and viewdir.
-            if os.path.basename(__basedir) in ('undo', 'view'):
+            if os.path.basename(basedir) in ('undo', 'view'):
 
-                # Check each file in current __basedir for
+                # Check each file in current basedir for
                 # references to non-existant vimfiles.
-                for __file in __files:
+                for file_ in files:
 
                     # Undofiles are stored in the form '%path%to%file.ext'
                     # and can be directly translated to a form that Python
@@ -62,8 +62,8 @@ def prune(__start_dir=os.path.join(os.getenv('HOME'), '.vim')):
                     # not  been verified to work on Windows systems, and
                     # caution is advised as the results of this function
                     # may be irreversible).
-                    if os.path.isfile(__file.replace('%', os.sep)) is True:
-                        # __file references an existing file,
+                    if os.path.isfile(file_.replace('%', os.sep)) is True:
+                        # file_ references an existing file,
                         # so skip to the next one.
                         continue
 
@@ -77,48 +77,48 @@ def prune(__start_dir=os.path.join(os.getenv('HOME'), '.vim')):
                     # for the sake of later simplicity (NOTE: Again, this has
                     # not been tested to work as expected on non-POSIX systems,
                     # and caution is advised).
-                    elif os.path.isfile(os.path.expanduser(__file.replace('=+',
+                    elif os.path.isfile(os.path.expanduser(file_.replace('=+',
                         os.sep).strip('='))) is True:
-                        # __file references an existing file,
+                        # file_ references an existing file,
                         # so skip to the next one.
                         continue
 
-                    # __file does not reference an existing file,
+                    # file_ does not reference an existing file,
                     # so let's try deleting it.
                     else:
 
-                        # Try block for deleting the current __file.
+                        # Try block for deleting the current file_.
                         try:
 
                             # Append the current filename to the current
-                            # __basedir, using the os.sep, to create an
-                            # absolute path to the __file,
+                            # basedir, using the os.sep, to create an
+                            # absolute path to the file_,
                             # f.e. '/home/user/.vim/undo/%path%to%file.ext'
-                            __absolute_file = os.path.join(__basedir, __file)
+                            absolute_file = os.path.join(basedir, file_)
 
                             # If the file was already removed by something
                             # else, raise a FileError with the path.
-                            if not os.path.isfile(__absolute_file):
-                                raise FileError(__absolute_file)
+                            if not os.path.isfile(absolute_file):
+                                raise FileError(absolute_file)
 
                             # Add the size of the file to be deleted to the
                             # size of the files that have already been removed.
-                            __total_size += os.path.getsize(__absolute_file)
+                            total_size += os.path.getsize(absolute_file)
 
                             # Delete the vimfile from the filesystem.
-                            os.remove(__absolute_file)
+                            os.remove(absolute_file)
 
                         # Catch the FileError, but don't do anything with it.
                         except FileError:
                             pass
 
-                        # End of try block for deleting the current __file.
-                    # End of __file checking if-elif-else block.
-                # End of __files for loop.
+                        # End of try block for deleting the current file_.
+                    # End of file_ checking if-elif-else block.
+                # End of files for loop.
             # End of 'undo'/'view' if block.
         # End of os.walk() for loop.
 
-    # In the case of the __start_dir being invalid...
+    # In the case of the start_dir being invalid...
     except DirError as e:
         # ...catch fatal custom exception, and report it to the user.
         print "{} is not a real directory.".format(e)
@@ -130,7 +130,7 @@ def prune(__start_dir=os.path.join(os.getenv('HOME'), '.vim')):
     # If outer try block executed with no exceptions...
     else:
         # ...report the amount of disk space freed in kilobytes.
-        print "Cleared {}kb of disc space.".format(__total_size / 1024)
+        print "Cleared {}kb of disc space.".format(total_size / 1024)
 
     # At end of execution, print a message stating we're done.
     finally:
@@ -191,7 +191,7 @@ class FileError(Error):
 
 
 __all__ = ['prune']
-__version__ = '0.2'
+__version__ = '0.2.1'
 
 # If we were called from command line...
 if __name__ == "__main__":
