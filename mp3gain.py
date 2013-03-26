@@ -37,7 +37,7 @@ def walk(start_dir=os.getcwd()):
         # Check to see if the mp3gain utility is installed.
         # NOTE: This will throw a CalledProcessError before the ExecError
         #       can be caught.
-        if subprocess.check_call('mp3gain -v', shell=True,
+        if subprocess.check_call('/usr/bin/mp3gain -v', shell=True,
                 stderr=subprocess.STDOUT, stdout=subprocess.PIPE) is not 0:
             raise ExecError()
         # Check to make sure we're working in a real directory.
@@ -122,12 +122,12 @@ def mp3gain(directory=os.getcwd()):
         # it into music file as an IDv3 tag (and update any APEv2 ReplayGain
         # tags to IDv3 tags), preserving original files' ctime, etc.
         # TODO: Really want to see if this changes files (.communicate())
-        proc = subprocess.Popen('/usr/bin/mp3gain -s i -s r -p *.mp3', 
+        proc = subprocess.Popen('/usr/bin/mp3gain -s i -s r -p *.mp3',
                 cwd=directory, shell=True)
         proc.wait()
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
-        # TODO: With Popen, we can't just check the retcode in order 
+        # TODO: With Popen, we can't just check the retcode in order
         #       to see if the command succeeded or not.
         # if proc is not 0:
             # raise ProcError(directory)
