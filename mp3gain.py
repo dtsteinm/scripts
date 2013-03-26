@@ -35,9 +35,10 @@ def walk(start_dir=os.getcwd()):
 
     try:
         # Check to see if the mp3gain utility is installed.
-        # FIXME: Unwanted version output
-        # NOTE: Use subprocess.check_output()/call() instead of .system()
-        if os.system('mp3gain -v') is not 0:
+        # NOTE: This will throw a CalledProcessError before the ExecError
+        #       can be caught.
+        if subprocess.check_call('mp3gain -v', shell=True,
+                stderr=subprocess.STDOUT, stdout=subprocess.PIPE) is not 0:
             raise ExecError()
         # Check to make sure we're working in a real directory.
         if os.path.isdir(start_dir) is False:
@@ -117,24 +118,19 @@ def mp3gain(directory=os.getcwd()):
             raise DirError(directory)
 
         # Create a subprocess, and call the command inside of a shell.
-        # Command will: Calculate ReplayGain if tag does not exist, and insert
+        # Command will: Calculate ReplayGain, even if tag exists, and insert
         # it into music file as an IDv3 tag (and update any APEv2 ReplayGain
         # tags to IDv3 tags), preserving original files' ctime, etc.
-        # TODO: Really want to see if this changes files
-        # NOTE: Use subprocess.check_output()/Popen() instead of .call()
-        # FIXME: call sucks, switch to Popen(); do stuff with stdout, etc
+        # TODO: Really want to see if this changes files (.communicate())
         proc = subprocess.Popen('/usr/bin/mp3gain -s i -s r -p *.mp3', 
                 cwd=directory, shell=True)
         proc.wait()
-        #proc = subprocess.call(['/usr/bin/mp3gain -s i -s r -p',
-        #    os.path.join(directory, r'/*.mp3')], shell=True)
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
-        # TODO: Currently, mp3gain seems to _always_ return a zero on exit;
-        #       I need to use something along the lines of Popen and parse the
-        #       output to display any meaningful messages to the user.
-        if proc is not 0:
-            raise ProcError(directory)
+        # TODO: With Popen, we can't just check the retcode in order 
+        #       to see if the command succeeded or not.
+        # if proc is not 0:
+            # raise ProcError(directory)
         print 'Finished with:', directory
     # Raised when the subprocess.call() does not execute
     # successfully (i.e. directory does not contain any MP3s).
