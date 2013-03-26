@@ -103,6 +103,7 @@ def walk(start_dir=os.getcwd()):
 
 # mp3gain is where we do our actual work.
 # TODO: Add messages for progress on a directory.
+# TODO: Add mp3gain options, f.e. just check tags; ignore tags
 def mp3gain(directory=os.getcwd()):
     """Attach IDv3 ReplayGain tags for the MP3 files in """ \
             """the specified directory.
@@ -120,9 +121,13 @@ def mp3gain(directory=os.getcwd()):
         # it into music file as an IDv3 tag (and update any APEv2 ReplayGain
         # tags to IDv3 tags), preserving original files' ctime, etc.
         # TODO: Really want to see if this changes files
-        # NOTE: Use subprocess.check_output() instead of .call()
-        proc = subprocess.call(['/usr/bin/mp3gain -s i -p ',
-            directory, '/*.mp3'], shell=True)
+        # NOTE: Use subprocess.check_output()/Popen() instead of .call()
+        # FIXME: call sucks, switch to Popen(); do stuff with stdout, etc
+        proc = subprocess.Popen('/usr/bin/mp3gain -s i -s r -p *.mp3', 
+                cwd=directory, shell=True)
+        proc.wait()
+        #proc = subprocess.call(['/usr/bin/mp3gain -s i -s r -p',
+        #    os.path.join(directory, r'/*.mp3')], shell=True)
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
         # TODO: Currently, mp3gain seems to _always_ return a zero on exit;
