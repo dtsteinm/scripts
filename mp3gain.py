@@ -9,7 +9,7 @@ import re
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: March 23, 2013
+# Last updated: March 26, 2013
 
 """ Recursively tag MP3 files with ReplayGain attributes """ \
         """using the mp3gain utility."""
@@ -35,20 +35,19 @@ def walk(start_dir=os.getcwd()):
 
     try:
         # Check to see if the mp3gain utility is installed.
-        # NOTE: This will throw a CalledProcessError before the ExecError
-        #       can be caught.
-        if subprocess.check_call('/usr/bin/mp3gain -v', shell=True,
-                stderr=subprocess.STDOUT, stdout=subprocess.PIPE) is not 0:
-            raise ExecError()
+        if subprocess.call('/usr/bin/mp3gai -v', shell=True,
+                stderr=subprocess.STDOUT, stdout=subprocess.PIPE) is 127:
+            raise NoExecutableError()
         # Check to make sure we're working in a real directory.
         if os.path.isdir(start_dir) is False:
-            raise DirError(start_dir)
+            raise DirectoryError(start_dir)
 
         # Anonymous function to check for dotfiles
         dot_check = lambda name: re.match(r'^\..*$', name)
 
         # Iterate filesystem structure, checking each list of files contained
         # in each directory for anything that resembles an MP3 file.
+        # TODO: Display progress on directory tree.
         for basedir, pathnames, files in os.walk(start_dir):
             # Skip hidden directories (dotfiles)
             for pathname in pathnames:
@@ -59,36 +58,33 @@ def walk(start_dir=os.getcwd()):
                     # Better safe than sorry: let's verify is a
                     # real directory (it should be).
                     if os.path.isdir(basedir) is False:
-                        raise DirError(basedir)
+                        raise DirectoryError(basedir)
                     # Skip on hidden files
                     if dot_check(file_):
                         continue
                     # Call mp3gain when we hit a directory containing MP3s.
                     if re.match(r'^.*\.mp3$', file_) is not None:
-                        if mp3gain(basedir) is 1:
-                            raise ProcError(basedir)
+                        mp3gain(basedir)
                         # Raise our flag
                         flag = True
                         # This directory is done, so we can go to the next one.
                         break
                 # If we looked at a non-existent directory (deleted while
                 # running?), just go on to the next one on our walk
-                except DirError:
+                except DirectoryError:
                     pass
                 # End of inner isdir() try...except
             # End of files loop
         # End of os.walk() loop
-    # Quit on DirError not caught inside for loop.
+    # Quit on DirectoryError not caught inside for loop.
     # Initial directory doesn't exist, so there's nothing to do.
-    # FIXME: Do I really need to return 1 here? Output is kinda ugly.
-    except (DirError, ProcError) as e:
-        return 1
-    except ExecError:
-        return 1
-    # Unexpected error; let's find out what it is.
+    except (DirectoryError, ProcessingError) as e:
+        print '\nSkipping directory:', e
+    except NoExecutableError:
+        pass
+    # Unexpected error; quit(?).
     except:
         print '\nSomething went horribly wrong on our walk!'
-        raise
     # Made it out of the for loop with no additional errors.
     else:
         # Print a message indicating whether or not files had been processed.
@@ -105,7 +101,6 @@ def walk(start_dir=os.getcwd()):
 
 
 # mp3gain is where we do our actual work.
-# TODO: Add messages for progress on a directory.
 def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
         skip=False, preserve=True):
     """Attach IDv3 ReplayGain tags for the MP3 files in """ \
@@ -124,7 +119,9 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
     try:
         # Check to make sure we're working in a real directory.
         if os.path.isdir(directory) is False:
-            raise DirError(directory)
+            raise DirectoryError(directory)
+
+        # FIXME: Currently assumes that /usr/bin/mp3gain is installed.
 
         # Set our command and options to use here.
         # Make changes to IDv3 tags only
@@ -144,27 +141,23 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
         command += '*.mp3'
 
         # Create a subprocess, and call the command inside of a shell.
-        # TODO: Really want to see if this changes files (.communicate())
         proc = subprocess.Popen(command, cwd=directory, shell=True,
                 stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
         proc.wait()
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
         if proc.poll() is not 0:
-            raise ProcError(directory)
+            raise ProcessingError(directory)
         print 'Finished with:', directory
     # Raised when the subprocess.call() does not execute
     # successfully (i.e. directory does not contain any MP3s).
     # Since this can be called by itself, let's also
     # raise directory errors right here, too.
-    # FIXME: Do I really need to return 1 here? Output is kinda ugly.
-    except (ProcError, DirError):
-        # Return a non-zero result to indicate failure.
-        return 1
-    # Unexpected error, raise it for details.
+    except (ProcessingError, DirectoryError) as e:
+        print '\nSkipping directory:', e
+    # Unexpected error; quit(?).
     except:
         print '\nSomething went horribly wrong processing our files!'
-        raise
     # End of isdir()|call() try...except block
 # End of mp3gain() function
 
@@ -172,16 +165,13 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
 
 
 # Begin customized module Exceptions.
-# TODO: Clean this up to better conform to standard Excetions.
-#       Also, fix try...excepts to match same conventions.
-#       Also also, are all the 'return 1's appropriate?
 class Error(Exception):
     """Base class for exceptions caused by methods in the mp3gain module.
     """
     pass
 
 
-class DirError(Error):
+class DirectoryError(Error):
     """Exception raised for errors relating to directory existence.
 
     Attributes:
@@ -191,14 +181,12 @@ class DirError(Error):
     def __init__(self, dir_):
         Exception.__init__(self)
         self.dir_ = dir_
-        print '\nException: DirError:'
-        print 'Directory does not exist:', self.dir_
 
     def __str__(self):
         return repr(self.dir_)
 
 
-class ProcError(Error):
+class ProcessingError(Error):
     """Exception raised while attempting to process files """ \
             """with the mp3gain utility.
 
@@ -209,29 +197,26 @@ class ProcError(Error):
     def __init__(self, dir_):
         Exception.__init__(self)
         self.dir_ = dir_
-        print '\nException: ProcError:'
-        print 'There was an error while processing:'
-        print self.dir_
 
     def __str__(self):
         return repr(self.dir_)
 
 
-class ExecError(Error):
+class NoExecutableError(Error):
     """Exception raised when mp3gain utility is not installed on system.
 
     Attributes:
     """
 
     def __init__(self):
-        print '\nException: ExecError:'
+        print '\nException: NoExecutableError:'
         print 'The mp3gain utility is not installed on this system.'
 
 # End of customized module Exceptions.
 
 # What do we want to import using 'from mp3gain import *'
 __all__ = ['walk', 'mp3gain']
-__version__ = '0.7'
+__version__ = '0.7.1'
 
 # If we were called from command line...
 if __name__ == "__main__":
