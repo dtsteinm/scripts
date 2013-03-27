@@ -200,7 +200,7 @@ class Error(Exception):
     pass
 
 
-class DirError(Error):
+class DirectoryError(Error):
     """Exception raised for errors relating to directory """ \
             """existence.
 
