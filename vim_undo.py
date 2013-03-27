@@ -8,7 +8,7 @@ import os
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: March 15, 2013
+# Last updated: March 26, 2013
 
 
 """Detects unusable undofiles in Vim's undodir; for example""" \
@@ -38,7 +38,7 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
         # Check to see if provided or default directory exists.
         if not os.path.isdir(start_dir):
             # Throw custom exception if it does not.
-            raise DirError(start_dir)
+            raise DirectoryError(start_dir)
 
         # Initialize total_size to store the amount of disk space
         # saved by deleting unusable vimfiles.
@@ -119,7 +119,7 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
         # End of os.walk() for loop.
 
     # In the case of the start_dir being invalid...
-    except DirError as e:
+    except DirectoryError as e:
         # ...catch fatal custom exception, and report it to the user.
         print "{} is not a real directory.".format(e)
 
@@ -154,7 +154,7 @@ class Error(Exception):
     pass
 
 
-class DirError(Error):
+class DirectoryError(Error):
     """Exception raised for errors relating to directory """ \
             """existence.
 
@@ -165,8 +165,6 @@ class DirError(Error):
     def __init__(self, dir_):
         Exception.__init__(self)
         self.dir_ = dir_
-        # print '\nException: DirError:'
-        # print 'Directory does not exist:', self.dir_
 
     def __str__(self):
         return repr(self.dir_)
@@ -183,15 +181,13 @@ class FileError(Error):
     def __init__(self, file_):
         Exception.__init__(self)
         self.file_ = file_
-        # print '\nException: FileError:'
-        # print 'File does not exist:', self.file_
 
     def __str__(self):
         return repr(self.file_)
 
 
 __all__ = ['prune']
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 # If we were called from command line...
 if __name__ == "__main__":
