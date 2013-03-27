@@ -35,7 +35,7 @@ def walk(start_dir=os.getcwd()):
 
     try:
         # Check to see if the mp3gain utility is installed.
-        if subprocess.call('/usr/bin/mp3gai -v', shell=True,
+        if subprocess.call('/usr/bin/mp3gain -v', shell=True,
                 stderr=subprocess.STDOUT, stdout=subprocess.PIPE) is 127:
             raise NoExecutableError()
         # Check to make sure we're working in a real directory.
@@ -78,8 +78,8 @@ def walk(start_dir=os.getcwd()):
         # End of os.walk() loop
     # Quit on DirectoryError not caught inside for loop.
     # Initial directory doesn't exist, so there's nothing to do.
-    except (DirectoryError, ProcessingError) as e:
-        print '\nSkipping directory:', e
+    except DirectoryError as e:
+        print "{} is not a real directory.".format(e)
     except NoExecutableError:
         pass
     # Unexpected error; quit(?).
@@ -148,16 +148,19 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
         # than a 0, something went wrong with the process.
         if proc.poll() is not 0:
             raise ProcessingError(directory)
-        print 'Finished with:', directory
     # Raised when the subprocess.call() does not execute
     # successfully (i.e. directory does not contain any MP3s).
     # Since this can be called by itself, let's also
     # raise directory errors right here, too.
-    except (ProcessingError, DirectoryError) as e:
-        print '\nSkipping directory:', e
+    except ProcessingError as e:
+        print "There was an error processing {}.".format(e)
+    except DirectoryError as e:
+        print "{} is not a real directory.".format(e)
     # Unexpected error; quit(?).
     except:
         print '\nSomething went horribly wrong processing our files!'
+    else:
+        print 'Finished with:', directory
     # End of isdir()|call() try...except block
 # End of mp3gain() function
 
