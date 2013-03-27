@@ -106,12 +106,19 @@ def walk(start_dir=os.getcwd()):
 
 # mp3gain is where we do our actual work.
 # TODO: Add messages for progress on a directory.
-# TODO: Add mp3gain options, f.e. just check tags; ignore tags
-def mp3gain(directory=os.getcwd()):
+def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
+        skip=False, preserve=True):
     """Attach IDv3 ReplayGain tags for the MP3 files in """ \
             """the specified directory.
 
     Example: mp3gain.mp3gain('/path/to/Music/Artist/Album')
+
+    Attributes:
+      directory -- Directory on which to apply ReplayGain
+      recalc -- Force re-calculation of ReplayGain tags (True)
+      delete -- Delete current ReplayGain tags (False)
+      skip -- Do not read/write ReplayGain tags (False)
+      preserve -- Preserve timestamps on current file (True)
     """
 
     try:
@@ -119,21 +126,32 @@ def mp3gain(directory=os.getcwd()):
         if os.path.isdir(directory) is False:
             raise DirError(directory)
 
+        # Set our command and options to use here.
+        # Make changes to IDv3 tags only
+        command = '/usr/bin/mp3gain -s i '
+        # Recalculate ReplayGain, regardless of current RG tags
+        if recalc:
+            command += '-s r '
+        # Delete current ReplayGain tags from file
+        if delete:
+            command += '-s d '
+        # Skip reading/writing of ReplayGain tags
+        if skip:
+            command += '-s s '
+        # Preserve access/creation/modified times from file
+        if preserve:
+            command += '-p '
+        command += '*.mp3'
+
         # Create a subprocess, and call the command inside of a shell.
-        # Command will: Calculate ReplayGain, even if tag exists, and insert
-        # it into music file as an IDv3 tag (and update any APEv2 ReplayGain
-        # tags to IDv3 tags), preserving original files' ctime, etc.
         # TODO: Really want to see if this changes files (.communicate())
-        proc = subprocess.Popen('/usr/bin/mp3gain -s i -s r -p *.mp3',
-                cwd=directory, shell=True, stderr=subprocess.STDOUT,
-                stdout=subprocess.PIPE)
+        proc = subprocess.Popen(command, cwd=directory, shell=True,
+                stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
         proc.wait()
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
-        # TODO: With Popen, we can't just check the retcode in order
-        #       to see if the command succeeded or not.
-        # if proc is not 0:
-            # raise ProcError(directory)
+        if proc.poll() is not 0:
+            raise ProcError(directory)
         print 'Finished with:', directory
     # Raised when the subprocess.call() does not execute
     # successfully (i.e. directory does not contain any MP3s).
@@ -213,7 +231,7 @@ class ExecError(Error):
 
 # What do we want to import using 'from mp3gain import *'
 __all__ = ['walk', 'mp3gain']
-__version__ = '0.6'
+__version__ = '0.7'
 
 # If we were called from command line...
 if __name__ == "__main__":
