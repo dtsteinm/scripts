@@ -81,7 +81,9 @@ def walk(start_dir=os.getcwd()):
     # Quit on DirError not caught inside for loop.
     # Initial directory doesn't exist, so there's nothing to do.
     # FIXME: Do I really need to return 1 here? Output is kinda ugly.
-    except (DirError, ExecError, ProcError):
+    except (DirError, ProcError) as e:
+        return 1
+    except ExecError:
         return 1
     # Unexpected error; let's find out what it is.
     except:
@@ -123,7 +125,8 @@ def mp3gain(directory=os.getcwd()):
         # tags to IDv3 tags), preserving original files' ctime, etc.
         # TODO: Really want to see if this changes files (.communicate())
         proc = subprocess.Popen('/usr/bin/mp3gain -s i -s r -p *.mp3',
-                cwd=directory, shell=True)
+                cwd=directory, shell=True, stderr=subprocess.STDOUT,
+                stdout=subprocess.PIPE)
         proc.wait()
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
@@ -210,7 +213,7 @@ class ExecError(Error):
 
 # What do we want to import using 'from mp3gain import *'
 __all__ = ['walk', 'mp3gain']
-__version__ = '0.5'
+__version__ = '0.6'
 
 # If we were called from command line...
 if __name__ == "__main__":
