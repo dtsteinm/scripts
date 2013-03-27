@@ -22,7 +22,6 @@ import re
 #        self.start_dir = start_dir
 
 
-# TODO: Interactivity when no playlist_type specified?
 # TODO: Accept multiple values for playlist type.
 def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     """Create media playlist(s) for specified directory and playlist """\
@@ -35,27 +34,41 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
 
     # Clean up user input
     start_dir = start_dir.strip()
-    playlist_type = playlist_type.strip()
+    # playlist_type = playlist_type.strip()
 
     # TODO: Verify start_dir exists (start a try...except block)
     if os.path.isdir(start_dir) is False:
         pass
 
-    # TODO: roll this into for loop
-    if playlist_type is ('pls'):
+    # Flags for what kind of playlist file to create.
+    # These variables must exist for later execution, so declare
+    # them as false for now.
+    PLS = False
+    M3U = False
+
+    # FIXME: There _has_ to be a better way to do this.
+    # Check to see if playlist_type was passed as a string or list
+    # and set the appropriate flag in either case.
+    if type(playlist_type) is str:
+        if playlist_type is 'pls':
+            PLS = True
+        if playlist_type is 'm3u':
+            M3U = True
+    elif type(playlist_type) is list:
+        for type_ in playlist_type:
+            if type_ is 'pls':
+                PLS = True
+            if type_ is 'm3u':
+                M3U = True
+    # Default to a PLS file if no valid filetype was specified.
+    else:
         PLS = True
-        M3U = False
-    if playlist_type is ('m3u'):
-        PLS = False
-        M3U = True
-    # TODO: What to do with no valid input?
 
     # Anonymous function to check for dotfiles
     dot_check = lambda name: re.match(r'^\..*$', name)
 
-    # List of known media file extensions
-    media_exts = ['mkv','avi','wmv','mp4','mp3','flac','ogg']
-
+    # List of known media file extensions for later use.
+    media_exts = ['mkv', 'avi', 'wmv', 'mp4', 'mp3', 'flac', 'ogg']
 
     # TODO: Throw this in a try...except
     # Start in startdir, and and create a pls and/or m3u playlist
@@ -63,7 +76,7 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     # current basedir and the list returned from sortedfiles()
     # for the creation of playlist files with absolute paths.
     for basedir, pathnames, files in os.walk(start_dir):
-        # Skip hidden directories (dotfiles)
+        # Skip hidden directories (pathnames) and files in current basedir
         for pathname in pathnames:
             if dot_check(pathname):
                 pathnames.remove(pathname)
@@ -226,7 +239,7 @@ class FileError(Error):
 
 __all__ = ['makeplaylist', 'findfiles', 'sortfiles',
            'getseqnum', 'mkpls', 'mkm3u']
-__version__ = '0.05'
+__version__ = '0.06'
 
 # If we were called from command line...
 if __name__ == "__main__":
