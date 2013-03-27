@@ -9,7 +9,7 @@ import re
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: March 19, 2013
+# Last updated: March 26, 2013
 
 
 """Module with functions to simplify the sorting of media files with """\
@@ -29,12 +29,11 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
 
     Attributes:
         start_dir -- directory from which to start; if None, prompt user?
-        playlist_type -- type of playlist to create; either 'pls' or 'm3u'
+        playlist_type -- type of playlist to create; 'pls' and/or 'm3u'
     """
 
     # Clean up user input
     start_dir = start_dir.strip()
-    # playlist_type = playlist_type.strip()
 
     # TODO: Verify start_dir exists (start a try...except block)
     if os.path.isdir(start_dir) is False:
@@ -48,14 +47,16 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
 
     # FIXME: There _has_ to be a better way to do this.
     # Check to see if playlist_type was passed as a string or list
-    # and set the appropriate flag in either case.
+    # and set the appropriate flag in either case. Also clean up input.
     if type(playlist_type) is str:
+        playlist_type.strip()
         if playlist_type is 'pls':
             PLS = True
         if playlist_type is 'm3u':
             M3U = True
     elif type(playlist_type) is list:
         for type_ in playlist_type:
+            type_.strip()
             if type_ is 'pls':
                 PLS = True
             if type_ is 'm3u':
@@ -199,7 +200,6 @@ class Error(Exception):
     pass
 
 
-# FIXME: Rename as necessary for errors thrown in this module.
 class DirError(Error):
     """Exception raised for errors relating to directory """ \
             """existence.
@@ -218,8 +218,7 @@ class DirError(Error):
         return repr(self.dir_)
 
 
-# FIXME: Rename as necessary for errors thrown in this module.
-class FileError(Error):
+class PlaylistExistsError(Error):
     """Exception raised for errors relating to file """ \
             """existence.
 
@@ -239,7 +238,7 @@ class FileError(Error):
 
 __all__ = ['makeplaylist', 'findfiles', 'sortfiles',
            'getseqnum', 'mkpls', 'mkm3u']
-__version__ = '0.06'
+__version__ = '0.07'
 
 # If we were called from command line...
 if __name__ == "__main__":
@@ -247,15 +246,14 @@ if __name__ == "__main__":
     import re
     import sys
 
-    # FIXME: Needs to be re-written to work for this module.
     # TODO: Put in some usage message on bad arg list.
     # User can get to work right away number of arguments.
+    if len(sys.argv) == 3:
+        makeplaylist(sys.argv[1], sys.argv[2])
     if len(sys.argv) == 2:
-        #prune(sys.argv[1])
-        pass
+        makeplaylist(sys.argv[1])
     # Otherwise, start walking from current working directory.
     else:
-        #prune()
-        pass
+        makeplaylist()
 
 # vim: set ts=4 sts=4 sw=4 et:
