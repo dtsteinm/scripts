@@ -1,8 +1,9 @@
 #!/usr/bin/env python2
 
 import os
-import subprocess
 import re
+import sys
+import subprocess
 
 # mp3gain Python module
 # Copyright (C) 2013 Dylan Steinmetz <dtsteinm@gmail.com>
@@ -140,6 +141,12 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
             command += '-p '
         command += '*.mp3'
 
+        # Display message when we start a directory
+        print 'Starting:', directory,
+        # Flush stdout in order to force Python to print the previous
+        # line with a trailing comma/no newline; otherwise, it waits
+        # for the rest of the line, which, is usually a return.
+        sys.stdout.flush()
         # Create a subprocess, and call the command inside of a shell.
         proc = subprocess.Popen(command, cwd=directory, shell=True,
                 stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
@@ -153,14 +160,14 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
     # Since this can be called by itself, let's also
     # raise directory errors right here, too.
     except ProcessingError as e:
-        print "There was an error processing {}.".format(e)
+        print '\rThere was an error processing {}.'.format(e)
     except DirectoryError as e:
-        print "{} is not a real directory.".format(e)
+        print '\r{} is not a real directory.'.format(e)
     # Unexpected error; quit(?).
     except:
         print '\nSomething went horribly wrong processing our files!'
     else:
-        print 'Finished with:', directory
+        print '\rFinished with:', directory
     # End of isdir()|call() try...except block
 # End of mp3gain() function
 
