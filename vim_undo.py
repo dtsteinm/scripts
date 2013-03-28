@@ -179,7 +179,7 @@ class FileError(Error):
 
 
 __all__ = ['prune']
-__version__ = '0.2.2'
+__version__ = '0.3'
 
 # If we were called from command line...
 if __name__ == "__main__":
