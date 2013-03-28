@@ -11,7 +11,7 @@ import os
 # Last updated: March 26, 2013
 
 
-"""Detects unusable undofiles in Vim's undodir; for example""" \
+"""Detects unusable undo and view files in Vim's undodir; for example """ \
         """user has moved or deleted previously edited files."""
 
 
@@ -185,7 +185,8 @@ __version__ = '0.2.2'
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="deletes unusable \
+            undo and view files in user's vim directory")
     parser.add_argument('directory', help="user's vim directory")
     args = parser.parse_args()
 
