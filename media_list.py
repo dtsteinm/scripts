@@ -92,20 +92,6 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
             mkm3u([basedir, sortfiles(files)])
 
 
-# TODO: Write findfiles; place looping logic (os.walk) here; pack
-#        basedir and sorted list to be sent to mk{pls,m3u} functions
-#def findfiles(dir_=os.getcwd()):
-#    """Finds directories that contain media files from a given starting """\
-#            """point, and tracks the lists.
-#
-#    Attributes:
-#        dir_ -- directory in which to search for media files; cwd by default
-#    """
-#
-#    for basedir, pathnames, files in os.walk(dir_):
-#        return [basedir, sortfiles(files)]
-
-
 # FIXME: Write mkpls function
 def mkpls(file_list):
     """Creates a PLS format playlist file from a base directory and a """\

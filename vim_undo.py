@@ -140,8 +140,6 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
 
 
 # Begin customized module Exceptions.
-# TODO: Clean this up to better conform to standard Exceptions.
-#       Also, fix try...excepts to match same conventions.
 class Error(Exception):
     """Base class for exceptions caused by methods in """ \
             """the vim-undo module."""
