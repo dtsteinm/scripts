@@ -39,6 +39,7 @@ def walk(start_dir=os.getcwd()):
         if subprocess.call('/usr/bin/mp3gain -v', shell=True,
                 stderr=subprocess.STDOUT, stdout=subprocess.PIPE) is 127:
             raise NoExecutableError()
+
         # Check to make sure we're working in a real directory.
         if os.path.isdir(start_dir) is False:
             raise DirectoryError(start_dir)
@@ -50,42 +51,56 @@ def walk(start_dir=os.getcwd()):
         # in each directory for anything that resembles an MP3 file.
         # TODO: Display progress on directory tree.
         for basedir, pathnames, files in os.walk(start_dir):
+
+            # Better safe than sorry: let's verify it's a real directory.
+            if os.path.isdir(basedir) is False:
+                raise DirectoryError(basedir)
+
             # Skip hidden directories (dotfiles)
             for pathname in pathnames:
                 if dot_check(pathname):
                     pathnames.remove(pathname)
+
+            # We need to check each file in the current basedir,
+            # as the first file_ in our list may not be an MP3.
             for file_ in files:
                 try:
-                    # Better safe than sorry: let's verify is a
-                    # real directory (it should be).
-                    if os.path.isdir(basedir) is False:
-                        raise DirectoryError(basedir)
-                    # Skip on hidden files
+
+                    # Skip to next file_ on hidden files
                     if dot_check(file_):
                         continue
+
                     # Call mp3gain when we hit a directory containing MP3s.
+                    # TODO: Look into mutli-threading to speed up this process.
                     if re.match(r'^.*\.mp3$', file_) is not None:
                         mp3gain(basedir)
                         # Raise our flag
                         flag = True
                         # This directory is done, so we can go to the next one.
                         break
+
                 # If we looked at a non-existent directory (deleted while
                 # running?), just go on to the next one on our walk
                 except DirectoryError:
                     pass
+
                 # End of inner isdir() try...except
             # End of files loop
         # End of os.walk() loop
+
     # Quit on DirectoryError not caught inside for loop.
     # Initial directory doesn't exist, so there's nothing to do.
     except DirectoryError as e:
-        print "{} is not a real directory.".format(e)
+        print '{} is not a real directory.'.format(e)
+
+    # If mp3gain is not installed where we expected it, nothing to do.
     except NoExecutableError:
-        pass
-    # Unexpected error; quit(?).
+        print 'Quitting...'
+
+    # Any other errors encountered were too much for us to handle.
     except:
         print '\nSomething went horribly wrong on our walk!'
+
     # Made it out of the for loop with no additional errors.
     else:
         # Print a message indicating whether or not files had been processed.
@@ -93,16 +108,18 @@ def walk(start_dir=os.getcwd()):
             print '\nFinished processing files!'
         else:
             print '\nNo files to process!'
+
     # Generic completion block for messages like '...done!' after
     # try block has finished. (currently empty)
     finally:
         pass
+
     # End of outer isdir() try...except block
 # End of walk() function
 
 
 # mp3gain is where we do our actual work.
-def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
+def mp3gain(directory=os.getcwd(), recalc=False, delete=False,
         skip=False, preserve=True):
     """Attach IDv3 ReplayGain tags for the MP3 files in """ \
             """the specified directory.
@@ -111,7 +128,7 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
 
     Attributes:
       directory -- Directory on which to apply ReplayGain
-      recalc -- Force re-calculation of ReplayGain tags (True)
+      recalc -- Force re-calculation of ReplayGain tags (False)
       delete -- Delete current ReplayGain tags (False)
       skip -- Do not read/write ReplayGain tags (False)
       preserve -- Preserve timestamps on current file (True)
@@ -121,8 +138,6 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
         # Check to make sure we're working in a real directory.
         if os.path.isdir(directory) is False:
             raise DirectoryError(directory)
-
-        # FIXME: Currently assumes that /usr/bin/mp3gain is installed.
 
         # Set our command and options to use here.
         # Make changes to IDv3 tags only
@@ -147,15 +162,22 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
         # line with a trailing comma/no newline; otherwise, it waits
         # for the rest of the line, which, is usually a return.
         sys.stdout.flush()
+
         # Create a subprocess, and call the command inside of a shell.
         proc = subprocess.Popen(command, cwd=directory, shell=True,
                 stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
         proc.wait()
+
+        # 127 is the specific return code from the Linux shell
+        # to indicate the command was not found.
+        if proc.poll() is 127:
+            raise NoExecutableError()
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
-        if proc.poll() is not 0:
+        elif proc.poll() is not 0:
             raise ProcessingError(directory)
-    # Raised when the subprocess.call() does not execute
+
+    # Raised when the subprocess.Popen() does not execute
     # successfully (i.e. directory does not contain any MP3s).
     # Since this can be called by itself, let's also
     # raise directory errors right here, too.
@@ -163,12 +185,25 @@ def mp3gain(directory=os.getcwd(), recalc=True, delete=False,
         print '\rThere was an error processing {}.'.format(e)
     except DirectoryError as e:
         print '\r{} is not a real directory.'.format(e)
-    # Unexpected error; quit(?).
+
+    # Catch KeyboardInterrupts as a cue to cancel processing the current dir.
+    except KeyboardInterrupt:
+        print '\rSkipping: {}'.format(directory)
+
+    # TODO: Has to be some way to supress this output when mp3gain()
+    # is not called from walk().
+    except NoExecutableError:
+        raise
+
+    # Any other errors are not expected.
     except:
         print '\nSomething went horribly wrong processing our files!'
+
+    # Everything went according to plan.
     else:
         print '\rFinished with:', directory
-    # End of isdir()|call() try...except block
+
+    # End of isdir()|Popen() try...except block
 # End of mp3gain() function
 
 # End of module logic
@@ -226,14 +261,15 @@ class NoExecutableError(Error):
 
 # What do we want to import using 'from mp3gain import *'
 __all__ = ['walk', 'mp3gain']
-__version__ = '0.7.1'
+__version__ = '0.7.2'
 
 # If we were called from command line...
-if __name__ == "__main__":
-    import sys
+if __name__ == '__main__':
+    # import sys
     import os
 
     # TODO: Put in some usage message on bad arg list.
+    # TODO: Allow user to specify use of mp3gain() with specific args.
     # User can get to work right away number of arguments.
     if len(sys.argv) == 2:
         walk(sys.argv[1])
