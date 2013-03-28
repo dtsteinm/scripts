@@ -30,7 +30,6 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
     ...Done!
     >>> prune('/foo/bar')
     '/foo/bar' is not a real directory.
-    ...Done!
     """
 
     # Outer try block
@@ -131,10 +130,11 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
     else:
         # ...report the amount of disk space freed in kilobytes.
         print "Cleared {}kb of disc space.".format(total_size / 1024)
-
-    # At end of execution, print a message stating we're done.
-    finally:
         print "...Done!"
+
+    # At end of execution
+    finally:
+        pass
 
     # End of outer try block.
 
@@ -183,13 +183,14 @@ __version__ = '0.2.2'
 
 # If we were called from command line...
 if __name__ == "__main__":
-    import sys
+    import argparse
 
-    # TODO: Put in some usage message on bad arg list.
-    # User can get to work right away number of arguments.
-    if len(sys.argv) == 2:
-        prune(sys.argv[1])
-    # Otherwise, start walking from current working directory.
+    parser = argparse.ArgumentParser()
+    parser.add_argument('directory', help="user's vim directory")
+    args = parser.parse_args()
+
+    if args.directory is not None:
+        prune(args.directory)
     else:
         prune()
 
