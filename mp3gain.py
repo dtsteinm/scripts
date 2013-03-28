@@ -148,10 +148,7 @@ def mp3gain(directory=os.getcwd(), recalc=False, delete=False,
             command += '-s r '
         # Delete current ReplayGain tags from file
         if delete:
-            command += '-s d '
-        # Skip reading/writing of ReplayGain tags
-        if skip:
-            command += '-s s '
+            command += '-s d ' # Skip reading/writing of ReplayGain tags if skip: command += '-s s '
         # Preserve access/creation/modified times from file
         if preserve:
             command += '-p '
@@ -191,7 +188,7 @@ def mp3gain(directory=os.getcwd(), recalc=False, delete=False,
     except KeyboardInterrupt:
         print '\rSkipping: {}'.format(directory)
 
-    # TODO: Has to be some way to supress this output when mp3gain()
+    # TODO: Has to be some way to suppress this output when mp3gain()
     # is not called from walk().
     except NoExecutableError:
         raise

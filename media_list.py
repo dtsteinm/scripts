@@ -72,7 +72,7 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     media_exts = ['mkv', 'avi', 'wmv', 'mp4', 'mp3', 'flac', 'ogg']
 
     # TODO: Throw this in a try...except
-    # Start in startdir, and and create a pls and/or m3u playlist
+    # Start in startdir, and create a pls and/or m3u playlist
     # file for directories containing valid media files. Send the
     # current basedir and the list returned from sortedfiles()
     # for the creation of playlist files with absolute paths.
@@ -112,7 +112,7 @@ def mkpls(file_list):
             """list of filenames.
 
     Attributes:
-        file_list -- tuple containg base directory and sorted list of files
+        file_list -- tuple containing base directory and sorted list of files
     """
 
     print 'making pls'
@@ -175,8 +175,8 @@ def getseqnum(filename):
         # - filename[::-1]: reverse the string; essentially starts
         #                     re.sub from last character
         # - re.sub(..., 1)[::-1]: replace CRC32s with a single 'X'
-        #                         and un-reverse string
-        # - int.findall(...)[0]: find all occurences of one or more
+        #                         and unreverse string
+        # - int.findall(...)[0]: find all occurrences of one or more
         #                        numbers, and reference only the first
         # - int(...): cast string from re.findall() to int; key in
         #             sorted() only takes an integer?
@@ -191,7 +191,7 @@ def getseqnum(filename):
 
 
 # Begin customized module Exceptions.
-# TODO: Clean this up to better conform to standard Excetions.
+# TODO: Clean this up to better conform to standard Exceptions.
 #       Also, fix try...excepts to match same conventions.
 class Error(Exception):
     """Base class for exceptions caused by methods in """ \

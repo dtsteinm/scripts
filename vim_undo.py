@@ -52,12 +52,12 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
             if os.path.basename(basedir) in ('undo', 'view'):
 
                 # Check each file in current basedir for
-                # references to non-existant vimfiles.
+                # references to non-existent vimfiles.
                 for file_ in files:
 
                     # Undofiles are stored in the form '%path%to%file.ext'
                     # and can be directly translated to a form that Python
-                    # can check by replacing all occurences of '%' with
+                    # can check by replacing all occurrences of '%' with
                     # os.sep, f.e. '/' on POSIX systems (NOTE: this test has
                     # not  been verified to work on Windows systems, and
                     # caution is advised as the results of this function
@@ -139,14 +139,8 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
     # End of outer try block.
 
 
-# Define doctest test here.
-# def _test():
-    # import doctest
-    # doctest.testmod(verbose=True)
-
-
 # Begin customized module Exceptions.
-# TODO: Clean this up to better conform to standard Excetions.
+# TODO: Clean this up to better conform to standard Exceptions.
 #       Also, fix try...excepts to match same conventions.
 class Error(Exception):
     """Base class for exceptions caused by methods in """ \
