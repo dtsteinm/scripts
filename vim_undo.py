@@ -1,18 +1,20 @@
 #!/usr/bin/env python2
 
-import os
-
-
 # vim_undo Python module
 # Copyright (C) 2013 Dylan Steinmetz <dtsteinm@gmail.com>
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: March 26, 2013
+# Last updated: March 28, 2013
 
+"""Detects unusable undo and view files in Vim directory; for """ \
+        """example user has moved or deleted previously edited files."""
+import os
 
-"""Detects unusable undo and view files in Vim's undodir; for example """ \
-        """user has moved or deleted previously edited files."""
+__all__ = ['prune']
+__author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
+__license__ = 'WTFPL'
+__version__ = '0.3.1'
 
 
 def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
@@ -178,16 +180,15 @@ class FileError(Error):
         return repr(self.file_)
 
 
-__all__ = ['prune']
-__version__ = '0.3'
-
 # If we were called from command line...
-if __name__ == "__main__":
+if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description="deletes unusable \
             undo and view files in user's vim directory")
-    parser.add_argument('directory', help="user's vim directory")
+    parser.add_argument('directory', nargs='?', help="user's vim directory")
+    parser.add_argument('-v', '--version', action='version',
+            version='%(prog)s ' + __version__)
     args = parser.parse_args()
 
     if args.directory is not None:

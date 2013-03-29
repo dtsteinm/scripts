@@ -1,19 +1,23 @@
 #!/usr/bin/env python2
 
-import os
-import re
-import sys
-import subprocess
-
 # mp3gain Python module
 # Copyright (C) 2013 Dylan Steinmetz <dtsteinm@gmail.com>
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: March 26, 2013
+# Last updated: March 28, 2013
 
 """ Recursively tag MP3 files with ReplayGain attributes """ \
         """using the mp3gain utility."""
+import os
+import re
+import sys
+import subprocess
+
+__all__ = ['walk', 'mp3gain']
+__author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
+__license__ = 'WTFPL'
+__version__ = '0.7.3'
 
 
 # walk looks for directories containing mp3 files,
@@ -148,7 +152,10 @@ def mp3gain(directory=os.getcwd(), recalc=False, delete=False,
             command += '-s r '
         # Delete current ReplayGain tags from file
         if delete:
-            command += '-s d ' # Skip reading/writing of ReplayGain tags if skip: command += '-s s '
+            command += '-s d '
+        # Skip reading/writing of ReplayGain tags
+        if skip:
+            command += '-s s '
         # Preserve access/creation/modified times from file
         if preserve:
             command += '-p '
@@ -257,22 +264,21 @@ class NoExecutableError(Error):
 
 # End of customized module Exceptions.
 
-# What do we want to import using 'from mp3gain import *'
-__all__ = ['walk', 'mp3gain']
-__version__ = '0.7.2'
-
 # If we were called from command line...
 if __name__ == '__main__':
-    # import sys
-    import os
+    import argparse
 
-    # TODO: Put in some usage message on bad arg list.
-    # TODO: Allow user to specify use of mp3gain() with specific args.
-    # User can get to work right away number of arguments.
-    if len(sys.argv) == 2:
-        walk(sys.argv[1])
-    # Otherwise, start walking from current working directory.
+    parser = argparse.ArgumentParser(description="Applies ReplayGain \
+            tags to MP3 files, normalizing volume")
+    parser.add_argument('directory', nargs='?',
+            help='directory to begin searching')
+    parser.add_argument('-v', '--version', action='version',
+            version='%(prog)s ' + __version__)
+    args = parser.parse_args()
+
+    if args.directory is not None:
+        walk(args.directory)
     else:
-        walk(os.getcwd())
+        walk()
 
 # vim: set ts=4 sts=4 sw=4 et:
