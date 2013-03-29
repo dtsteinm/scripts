@@ -1,19 +1,21 @@
 #!/usr/bin/env python2
-
-import os
-import re
-
-
-# media_list Python module
+#
 # Copyright (C) 2013 Dylan Steinmetz <dtsteinm@gmail.com>
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: March 26, 2013
-
+# Last updated: March 28, 2013
 
 """Module with functions to simplify the sorting of media files with """\
         """complex filenames, and create playlist files for playback."""
+import os
+import re
+
+__all__ = ['makeplaylist', 'sortfiles', 'getseqnum', 'mkpls', 'mkm3u']
+__author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
+__version__ = '0.07'
+__license__ = 'WTFPL'
+
 
 # NOTE: Consider writing this OO with class (might be too late for that)
 #       Map out functions to ensure flow is logical
@@ -222,17 +224,13 @@ class PlaylistExistsError(Error):
         return repr(self.file_)
 
 
-__all__ = ['makeplaylist', 'findfiles', 'sortfiles',
-           'getseqnum', 'mkpls', 'mkm3u']
-__version__ = '0.07'
-
 # If we were called from command line...
 if __name__ == "__main__":
     import os
     import re
     import sys
 
-    # TODO: Put in some usage message on bad arg list.
+    # FIXME: Replace with argparse
     # User can get to work right away number of arguments.
     if len(sys.argv) == 3:
         makeplaylist(sys.argv[1], sys.argv[2])

@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
-
-# vim_undo Python module
+#
 # Copyright (C) 2013 Dylan Steinmetz <dtsteinm@gmail.com>
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
@@ -13,8 +12,8 @@ import os
 
 __all__ = ['prune']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__license__ = 'WTFPL'
 __version__ = '0.3.1'
+__license__ = 'WTFPL'
 
 
 def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
