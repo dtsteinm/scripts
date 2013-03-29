@@ -18,6 +18,7 @@ __license__ = 'WTFPL'
 
 def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
 
+    # TODO: Rewrite doctests to not output on system() calls.
     """Detects unusable undofiles in user's Vim undodir.
 
     >>> os.system('dd if=/dev/zero of=' + os.getenv('HOME') + """ \
@@ -28,6 +29,9 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
     0
     >>> prune()
     Cleared 3kb of disc space.
+    ...Done!
+    >>> prune()
+    Cleared 0kb of disc space.
     ...Done!
     >>> prune('/foo/bar')
     '/foo/bar' is not a real directory.
