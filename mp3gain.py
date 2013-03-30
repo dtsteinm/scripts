@@ -53,7 +53,6 @@ def walk(start_dir=os.getcwd()):
 
         # Iterate filesystem structure, checking each list of files contained
         # in each directory for anything that resembles an MP3 file.
-        # TODO: Display progress on directory tree.
         for basedir, pathnames, files in os.walk(start_dir):
 
             # Better safe than sorry: let's verify it's a real directory.
