@@ -122,6 +122,8 @@ def walk(start_dir=os.getcwd()):
 
 
 # mp3gain is where we do our actual work.
+# TODO: Look into displaying this as 'mp3gain(directory, **kwargs)
+#       in help(mp3gain) results.
 def mp3gain(directory=os.getcwd(), recalc=False, delete=False,
         skip=False, preserve=True):
     """Attach IDv3 ReplayGain tags for the MP3 files in """ \
