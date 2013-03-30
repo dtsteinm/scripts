@@ -15,7 +15,7 @@ import subprocess
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.7.3'
+__version__ = '0.7.4'
 __license__ = 'WTFPL'
 
 
@@ -122,10 +122,7 @@ def walk(start_dir=os.getcwd()):
 
 
 # mp3gain is where we do our actual work.
-# TODO: Look into displaying this as 'mp3gain(directory, **kwargs)
-#       in help(mp3gain) results.
-def mp3gain(directory=os.getcwd(), recalc=False, delete=False,
-        skip=False, preserve=True):
+def mp3gain(directory=os.getcwd(), **kwargs):
     """Attach IDv3 ReplayGain tags for the MP3 files in """ \
             """the specified directory.
 
@@ -138,6 +135,12 @@ def mp3gain(directory=os.getcwd(), recalc=False, delete=False,
       skip -- Do not read/write ReplayGain tags (False)
       preserve -- Preserve timestamps on current file (True)
     """
+
+    # Assign attributes from kwargs, applying a default value as needed.
+    recalc = kwargs.pop('recalc', False)
+    delete = kwargs.pop('delete', False)
+    skip = kwargs.pop('skip', False)
+    preserve = kwargs.pop('preserve', True)
 
     try:
         # Check to make sure we're working in a real directory.
