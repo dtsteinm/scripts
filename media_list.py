@@ -13,7 +13,7 @@ import re
 
 __all__ = ['makeplaylist', 'sortfiles', 'getseqnum', 'mkpls', 'mkm3u']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.07'
+__version__ = '0.08'
 __license__ = 'WTFPL'
 
 
@@ -89,9 +89,9 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
         # TODO: throw some checking in here to only make a playlist
         #       if basedir contains media files (mkv, avi, mp3, etc.)
         if PLS:
-            mkpls([basedir, sortfiles(files)])
+            mkpls((basedir, sortfiles(files)))
         if M3U:
-            mkm3u([basedir, sortfiles(files)])
+            mkm3u((basedir, sortfiles(files)))
 
 
 # FIXME: Write mkpls function
