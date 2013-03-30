@@ -15,7 +15,7 @@ import subprocess
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.7.4'
+__version__ = '0.7.5'
 __license__ = 'WTFPL'
 
 
@@ -180,17 +180,22 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         # to indicate the command was not found.
         if proc.poll() is 127:
             raise NoExecutableError()
+        # Return code of 1 indicates no files were processed.
+        if proc.poll() is 1:
+            raise NoMP3Error(directory)
         # If /usr/bin/mp3gain returned something other
         # than a 0, something went wrong with the process.
         elif proc.poll() is not 0:
             raise ProcessingError(directory)
 
-    # Raised when the subprocess.Popen() does not execute
-    # successfully (i.e. directory does not contain any MP3s).
-    # Since this can be called by itself, let's also
-    # raise directory errors right here, too.
+    # Raised when  directory does not contain any MP3s.
+    except NoMP3Error as e:
+        print '\r{} did not contain any MP3s.'.format(e)
+    # Raised when the subprocess.Popen() does not execute successfully.
     except ProcessingError as e:
         print '\rThere was an error processing {}.'.format(e)
+    # Since this can be called by itself, let's also
+    # raise directory errors right here, too.
     except DirectoryError as e:
         print '\r{} is not a real directory.'.format(e)
 
@@ -242,6 +247,22 @@ class DirectoryError(Error):
 class ProcessingError(Error):
     """Exception raised while attempting to process files """ \
             """with the mp3gain utility.
+
+    Attributes:
+        dir_ -- directory in which the error occured
+    """
+
+    def __init__(self, dir_):
+        Exception.__init__(self)
+        self.dir_ = dir_
+
+    def __str__(self):
+        return repr(self.dir_)
+
+
+class NoMP3Error(Error):
+    """Exception raised while attempting to process a directory """ \
+            """containing no MP3 files.
 
     Attributes:
         dir_ -- directory in which the error occured
