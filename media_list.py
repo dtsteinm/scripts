@@ -85,9 +85,9 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
         for pathname in pathnames:
             if dot_check(pathname):
                 pathnames.remove(pathname)
-            for file_ in files:
-                if dot_check(file_):
-                    files.remove(file_)
+        for file_ in files:
+            if dot_check(file_):
+                files.remove(file_)
         # TODO: throw some checking in here to only make a playlist
         #       if basedir contains media files (mkv, avi, mp3, etc.)
         if PLS:
