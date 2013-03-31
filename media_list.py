@@ -24,7 +24,6 @@ __license__ = 'WTFPL'
 #        self.start_dir = start_dir
 
 
-# TODO: Accept multiple values for playlist type.
 def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     """Create media playlist(s) for specified directory and playlist """\
             """type.
@@ -32,6 +31,9 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     Attributes:
         start_dir -- directory from which to start; if None, prompt user?
         playlist_type -- type of playlist to create; 'pls' and/or 'm3u'
+
+    Example: media_list.makeplaylist('/path/to/media', """ \
+            """playlist_type=['pls','m3u'])
     """
 
     # Clean up user input
@@ -89,18 +91,19 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
         # TODO: throw some checking in here to only make a playlist
         #       if basedir contains media files (mkv, avi, mp3, etc.)
         if PLS:
-            mkpls((basedir, sortfiles(files)))
+            mkpls(basedir, sortfiles(files))
         if M3U:
-            mkm3u((basedir, sortfiles(files)))
+            mkm3u(basedir, sortfiles(files))
 
 
 # FIXME: Write mkpls function
-def mkpls(file_list):
+def mkpls(directory, file_list):
     """Creates a PLS format playlist file from a base directory and a """\
             """list of filenames.
 
     Attributes:
-        file_list -- tuple containing base directory and sorted list of files
+        directory -- directory in which sorted files are stored
+        file_list -- a sorted list of files
     """
 
     print 'making pls'
@@ -109,12 +112,13 @@ def mkpls(file_list):
 
 
 # FIXME: Write mkm3u function
-def mkm3u(file_list):
+def mkm3u(directory, file_list):
     """Creates a M3U format playlist file from a base directory and a """\
             """list of filenames.
 
     Attributes:
-        file_list -- tuple containg base directory and sorted list of files
+        directory -- directory in which sorted files are stored
+        file_list -- a sorted list of files
     """
 
     print 'making m3u'
