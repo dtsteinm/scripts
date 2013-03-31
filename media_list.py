@@ -13,7 +13,7 @@ import re
 
 __all__ = ['makeplaylist', 'sortfiles', 'getseqnum', 'mkpls', 'mkm3u']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.2'
+__version__ = '0.2.1'
 __license__ = 'WTFPL'
 
 
@@ -46,7 +46,7 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     # Check to see if playlist_type was passed as a string or list
     # and set the appropriate flag in either case. Also clean up input.
     if type(playlist_type) is str:
-        playlist_type.strip()
+        print playlist_type.strip()
         if playlist_type is 'pls':
             PLS = True
         if playlist_type is 'm3u':
@@ -98,12 +98,10 @@ def mkpls(directory, file_list):
         file_list -- a sorted list of files
     """
 
-    print 'making pls'
-    # print file_list
-    # pass
-
     # Retrieve title of media from filesystem structure, and make it
     # more human readable.
+    # TODO: Perform more intelligent title extraction
+    #       (comparison of start_dir against directory?)
     name = os.path.basename(directory)
     title = re.sub('[._]', ' ', name)
 
@@ -273,8 +271,6 @@ class DirectoryError(Error):
     def __init__(self, dir_):
         Exception.__init__(self)
         self.dir_ = dir_
-        # print '\nException: DirError:'
-        # print 'Directory does not exist:', self.dir_
 
     def __str__(self):
         return repr(self.dir_)
@@ -285,14 +281,12 @@ class PlaylistExistsError(Error):
             """existence.
 
     Attributes:
-        file_ -- directory which caused the error
+        file_ -- file which caused the error
     """
 
     def __init__(self, file_):
         Exception.__init__(self)
         self.file_ = file_
-        # print '\nException: FileError:'
-        # print 'File does not exist:', self.file_
 
     def __str__(self):
         return repr(self.file_)
@@ -300,18 +294,24 @@ class PlaylistExistsError(Error):
 
 # If we were called from command line...
 if __name__ == "__main__":
-    import os
-    # import re
-    import sys
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Create PLS or M3U \
+            playlists")
+    parser.add_argument('-v', '--version', action='version',
+            version='%(prog)s ' + __version__)
+    parser.add_argument('-t','--playlist-type', default='pls',
+            choices=['pls','m3u'], help='type of playlist to create')
+    parser.add_argument('directory', nargs='?',
+            help='starting directory')
+    args = parser.parse_args()
 
-    # FIXME: Replace with argparse
-    # User can get to work right away number of arguments.
-    if len(sys.argv) == 3:
-        makeplaylist(sys.argv[1], sys.argv[2])
-    if len(sys.argv) == 2:
-        makeplaylist(sys.argv[1])
-    # Otherwise, start walking from current working directory.
+    # FIXME: makeplaylist does not like non-default values of 
+    #        args.playlist_type
+    if args.directory is not None:
+        makeplaylist(args.directory, args.playlist_type)
     else:
-        makeplaylist()
+        makeplaylist(playlist_type=args.playlist_type)
+
 
 # vim: set ts=4 sts=4 sw=4 et:
