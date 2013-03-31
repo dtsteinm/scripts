@@ -4,7 +4,7 @@
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: March 28, 2013
+# Last updated: March 31, 2013
 
 """Module with functions to simplify the sorting of media files with """\
         """complex filenames, and create playlist files for playback."""
@@ -13,7 +13,7 @@ import re
 
 __all__ = ['makeplaylist', 'sortfiles', 'getseqnum', 'mkpls', 'mkm3u']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.1'
+__version__ = '0.2'
 __license__ = 'WTFPL'
 
 
@@ -149,7 +149,6 @@ def mkpls(directory, file_list):
 # End of mkpls function
 
 
-# FIXME: Copy mkpls and make changes as needed.
 def mkm3u(directory, file_list):
     """Creates a M3U format playlist file from a base directory and a """\
             """list of filenames.
@@ -159,10 +158,43 @@ def mkm3u(directory, file_list):
         file_list -- a sorted list of files
     """
 
-    print 'making m3u'
-    print file_list
-    pass
+    # Retrieve title of media from filesystem structure, and make it
+    # more human readable.
+    name = os.path.basename(directory)
+    title = re.sub('[._]', ' ', name)
 
+    # Open the file using the same basename as used in the filesystem.
+    # FIXME: Check if file exists before writing to it.
+    with open(name + '.m3u', 'w') as f:
+
+        # Used to count extra materials.
+        extra = 1
+
+        # Heading for M3U files, skip a line.
+        f.write('#EXTM3U\n\n')
+
+        # Iterate, getting an entry number and filename for each file.
+        for file_ in file_list:
+
+            # Sequence number for actual content.
+            seqnum = getseqnum(file_)
+
+            # Mark unsortable files as an 'Extra' in the playlist.
+            if seqnum == 9999:
+                title_num = 'Extra ' + str(extra)
+                extra += 1
+            else:
+                title_num = str(seqnum)
+
+            # FIXME: Make sure this is valid in an m3u
+            # Title of file displayed to user.
+            f.write('#EXTINF:' + title + ' ' + title_num + '\n')
+            # Absolute path to file.
+            f.write(os.path.join(directory, file_) + '\n')
+
+        # End of for loop
+    # End of with block
+# End of mkm3u function
 
 # TODO: Make it easier to get a list from sortfiles (?)
 def sortfiles(files):
