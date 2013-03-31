@@ -13,15 +13,8 @@ import re
 
 __all__ = ['makeplaylist', 'sortfiles', 'getseqnum', 'mkpls', 'mkm3u']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.09'
+__version__ = '0.1'
 __license__ = 'WTFPL'
-
-
-# NOTE: Consider writing this OO with class (might be too late for that)
-#       Map out functions to ensure flow is logical
-#class MediaList():
-#    def __init__(self, start_dir=os.getcwd()):
-#        self.start_dir = start_dir
 
 
 def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
@@ -129,7 +122,7 @@ def mkpls(directory, file_list):
 
             # Number used for this entry in the PLS file.
             entry_num = str(i)
-            
+
             # Sequence number for actual content.
             seqnum = getseqnum(file_)
 
@@ -141,10 +134,10 @@ def mkpls(directory, file_list):
                 title_num = str(seqnum)
 
             # Absolute path to file.
-            f.write('File' + entry_num + '=' + \
+            f.write('File' + entry_num + '=' +
                     os.path.join(directory, file_) + '\n')
             # Title of file displayed to user.
-            f.write('Title' + entry_num + '=' + \
+            f.write('Title' + entry_num + '=' +
                     title + ' ' + title_num + '\n')
 
         # Standard data for playlist file.
