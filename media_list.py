@@ -13,7 +13,7 @@ import re
 
 __all__ = ['makeplaylist', 'sortfiles', 'getseqnum', 'mkpls', 'mkm3u']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.08'
+__version__ = '0.09'
 __license__ = 'WTFPL'
 
 
@@ -37,7 +37,7 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     """
 
     # Clean up user input
-    start_dir = start_dir.strip()
+    start_dir = os.path.expanduser(start_dir.strip())
 
     # TODO: Verify start_dir exists (start a try...except block)
     if os.path.isdir(start_dir) is False:
@@ -73,7 +73,7 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     dot_check = lambda name: re.match(r'^\..*$', name)
 
     # List of known media file extensions for later use.
-    media_exts = ['mkv', 'avi', 'wmv', 'mp4', 'mp3', 'flac', 'ogg']
+    # media_exts = ['mkv', 'avi', 'wmv', 'mp4', 'mp3', 'flac', 'ogg']
 
     # TODO: Throw this in a try...except
     # Start in startdir, and create a pls and/or m3u playlist
@@ -96,7 +96,6 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
             mkm3u(basedir, sortfiles(files))
 
 
-# FIXME: Write mkpls function
 def mkpls(directory, file_list):
     """Creates a PLS format playlist file from a base directory and a """\
             """list of filenames.
@@ -107,11 +106,57 @@ def mkpls(directory, file_list):
     """
 
     print 'making pls'
-    print file_list
-    pass
+    # print file_list
+    # pass
+
+    # Retrieve title of media from filesystem structure, and make it
+    # more human readable.
+    name = os.path.basename(directory)
+    title = re.sub('[._]', ' ', name)
+
+    # Open the file using the same basename as used in the filesystem.
+    # FIXME: Check if file exists before writing to it.
+    with open(name + '.pls', 'w') as f:
+
+        # Used to count extra materials.
+        extra = 1
+
+        # Heading for PLS files, skip a line.
+        f.write('[playlist]\n\n')
+
+        # Iterate, getting an entry number and filename for each file.
+        for i, file_ in enumerate(file_list, 1):
+
+            # Number used for this entry in the PLS file.
+            entry_num = str(i)
+            
+            # Sequence number for actual content.
+            seqnum = getseqnum(file_)
+
+            # Mark unsortable files as an 'Extra' in the playlist.
+            if seqnum == 9999:
+                title_num = 'Extra ' + str(extra)
+                extra += 1
+            else:
+                title_num = str(seqnum)
+
+            # Absolute path to file.
+            f.write('File' + entry_num + '=' + \
+                    os.path.join(directory, file_) + '\n')
+            # Title of file displayed to user.
+            f.write('Title' + entry_num + '=' + \
+                    title + ' ' + title_num + '\n')
+
+        # Standard data for playlist file.
+        f.write('\nNumberOfEntries=' + str(i))
+        f.write('\nVersion=2\n')
+
+        # End of enumerated for loop
+    # End of with block
+# End of mkpls function
 
 
-# FIXME: Write mkm3u function
+# FIXME: Copy mkpls and make changes as needed.
 def mkm3u(directory, file_list):
     """Creates a M3U format playlist file from a base directory and a """\
             """list of filenames.
@@ -231,7 +276,7 @@ class PlaylistExistsError(Error):
 # If we were called from command line...
 if __name__ == "__main__":
     import os
-    import re
+    # import re
     import sys
 
     # FIXME: Replace with argparse
