@@ -23,9 +23,15 @@ __license__ = 'WTFPL'
 # and calls mp3gain() when we have something to do.
 # TODO: Add messages displaying progress of entire file structure.
 # TODO: Allow settings to be passed to mp3gain(); possibly 'force' and 'skip'?
-def walk(start_dir=os.getcwd()):
+def walk(start_dir=os.getcwd(), **kwargs):
     """Traverses the filesystem structure, looking for directories """ \
             """containing MP3 files, and calls mp3gain() when appropriate.
+
+    Attributes:
+        start_dir -- root directory to begin looking in
+        force -- force recalculation on all files
+        skip -- skip ReplayGain calculation for files with existing tags
+        clear -- delete ReplayGain tags
 
     Example: mp3gain.walk('/path/to/Music')
     """
@@ -34,6 +40,23 @@ def walk(start_dir=os.getcwd()):
     start_dir = start_dir.strip()
     if start_dir[-1] is os.sep:
         start_dir = start_dir[:-1]
+
+    # Get kwargs, using defaults if not specified.
+    force = kwargs.pop('force', False)
+    if force:
+        skip = kwargs.pop('skip', False)
+    else:
+        skip = kwargs.pop('skip', True)
+    clear = kwargs.pop('clear', False)
+
+    # Create a dictionary of options to override mp3gain()'s defaults.
+    options = {}
+    if force:
+        options['recalc']=True
+    if skip:
+        options['skip']=True
+    if clear:
+        options['delete']=True
 
     # Flag to indicate work was done.
     flag = False
@@ -74,9 +97,10 @@ def walk(start_dir=os.getcwd()):
                         continue
 
                     # Call mp3gain when we hit a directory containing MP3s.
+                    # Passes options as expanded dictionary mapping.
                     # TODO: Look into mutli-threading to speed up this process.
                     if re.match(r'^.*\.mp3$', file_) is not None:
-                        mp3gain(basedir)
+                        mp3gain(basedir, **options)
                         # Raise our flag
                         flag = True
                         # This directory is done, so we can go to the next one.
@@ -103,6 +127,7 @@ def walk(start_dir=os.getcwd()):
     # Any other errors encountered were too much for us to handle.
     except:
         print '\nSomething went horribly wrong on our walk!'
+        raise
 
     # Made it out of the for loop with no additional errors.
     else:
@@ -137,6 +162,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
     """
 
     # Assign attributes from kwargs, applying a default value as needed.
+    # TODO: Look into other possible options, like 'undo'
     recalc = kwargs.pop('recalc', False)
     delete = kwargs.pop('delete', False)
     skip = kwargs.pop('skip', False)
