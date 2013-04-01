@@ -13,10 +13,11 @@ import re
 
 __all__ = ['makeplaylist', 'sortfiles', 'getseqnum', 'mkpls', 'mkm3u']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 __license__ = 'WTFPL'
 
 
+# TODO: Make playlist_type selection clearer.
 def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     """Create media playlist(s) for specified directory and playlist """\
             """type.
@@ -32,61 +33,70 @@ def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     # Clean up user input
     start_dir = os.path.expanduser(start_dir.strip())
 
-    # TODO: Verify start_dir exists (start a try...except block)
-    if os.path.isdir(start_dir) is False:
+    try:
+        if os.path.isdir(start_dir) is False:
+            raise DirectoryError(start_dir)
+
+        # Flags for what kind of playlist file to create.
+        # These variables must exist for later execution, so declare
+        # them as false for now.
+        PLS = False
+        M3U = False
+
+        # TODO: There _has_ to be a better way to do this.
+        # Check to see if playlist_type was passed as a string or list
+        # and set the appropriate flag in either case. Also clean up input.
+        if type(playlist_type) is str:
+            playlist_type.strip()
+            if playlist_type is 'pls':
+                PLS = True
+            if playlist_type is 'm3u':
+                M3U = True
+        elif type(playlist_type) is list:
+            for type_ in playlist_type:
+                type_.strip()
+                if type_ is 'pls':
+                    PLS = True
+                if type_ is 'm3u':
+                    M3U = True
+        # Default to a PLS file if no valid filetype was specified.
+        else:
+            PLS = True
+
+        # Anonymous function to check for dotfiles
+        dot_check = lambda name: re.match(r'^\..*$', name)
+
+        # List of known media file extensions for later use.
+        # media_exts = ['mkv', 'avi', 'wmv', 'mp4', 'mp3', 'flac', 'ogg']
+
+        # Start in startdir, and create a pls and/or m3u playlist
+        # file for directories containing valid media files. Send the
+        # current basedir and the list returned from sortedfiles()
+        # for the creation of playlist files with absolute paths.
+        for basedir, pathnames, files in os.walk(start_dir):
+            # Skip hidden directories (pathnames) and files in current basedir
+            for pathname in pathnames:
+                if dot_check(pathname):
+                    pathnames.remove(pathname)
+            for file_ in files:
+                if dot_check(file_):
+                    files.remove(file_)
+            # TODO: throw some checking in here to only make a playlist
+            #       if basedir contains media files (mkv, avi, mp3, etc.)
+            if PLS:
+                mkpls(basedir, sortfiles(files))
+            if M3U:
+                mkm3u(basedir, sortfiles(files))
+
+        # End of os.walk() for loop
+
+    except DirectoryError as e:
+        print '\n{} does not exist.'.format(e)
+    except:
         pass
 
-    # Flags for what kind of playlist file to create.
-    # These variables must exist for later execution, so declare
-    # them as false for now.
-    PLS = False
-    M3U = False
-
-    # FIXME: There _has_ to be a better way to do this.
-    # Check to see if playlist_type was passed as a string or list
-    # and set the appropriate flag in either case. Also clean up input.
-    if type(playlist_type) is str:
-        print playlist_type.strip()
-        if playlist_type is 'pls':
-            PLS = True
-        if playlist_type is 'm3u':
-            M3U = True
-    elif type(playlist_type) is list:
-        for type_ in playlist_type:
-            type_.strip()
-            if type_ is 'pls':
-                PLS = True
-            if type_ is 'm3u':
-                M3U = True
-    # Default to a PLS file if no valid filetype was specified.
-    else:
-        PLS = True
-
-    # Anonymous function to check for dotfiles
-    dot_check = lambda name: re.match(r'^\..*$', name)
-
-    # List of known media file extensions for later use.
-    # media_exts = ['mkv', 'avi', 'wmv', 'mp4', 'mp3', 'flac', 'ogg']
-
-    # TODO: Throw this in a try...except
-    # Start in startdir, and create a pls and/or m3u playlist
-    # file for directories containing valid media files. Send the
-    # current basedir and the list returned from sortedfiles()
-    # for the creation of playlist files with absolute paths.
-    for basedir, pathnames, files in os.walk(start_dir):
-        # Skip hidden directories (pathnames) and files in current basedir
-        for pathname in pathnames:
-            if dot_check(pathname):
-                pathnames.remove(pathname)
-        for file_ in files:
-            if dot_check(file_):
-                files.remove(file_)
-        # TODO: throw some checking in here to only make a playlist
-        #       if basedir contains media files (mkv, avi, mp3, etc.)
-        if PLS:
-            mkpls(basedir, sortfiles(files))
-        if M3U:
-            mkm3u(basedir, sortfiles(files))
+    # End of try...except block
+# End of makeplaylist function
 
 
 def mkpls(directory, file_list):
@@ -105,45 +115,55 @@ def mkpls(directory, file_list):
     name = os.path.basename(directory)
     title = re.sub('[._]', ' ', name)
 
-    # Open the file using the same basename as used in the filesystem.
-    # FIXME: Check if file exists before writing to it.
-    with open(name + '.pls', 'w') as f:
+    file_ = name + '.pls'
 
-        # Used to count extra materials.
-        extra = 1
+    try:
+        if os.path.isfile(file_):
+            raise PlaylistExistsError(file_)
+        
+        # Open the file using the same basename as used in the filesystem.
+        with open(file_, 'w') as f:
 
-        # Heading for PLS files, skip a line.
-        f.write('[playlist]\n\n')
+            # Used to count extra materials.
+            extra = 1
 
-        # Iterate, getting an entry number and filename for each file.
-        for i, file_ in enumerate(file_list, 1):
+            # Heading for PLS files, skip a line.
+            f.write('[playlist]\n\n')
 
-            # Number used for this entry in the PLS file.
-            entry_num = str(i)
+            # Iterate, getting an entry number and filename for each file.
+            for i, file_ in enumerate(file_list, 1):
 
-            # Sequence number for actual content.
-            seqnum = getseqnum(file_)
+                # Number used for this entry in the PLS file.
+                entry_num = str(i)
 
-            # Mark unsortable files as an 'Extra' in the playlist.
-            if seqnum == 9999:
-                title_num = 'Extra ' + str(extra)
-                extra += 1
-            else:
-                title_num = str(seqnum)
+                # Sequence number for actual content.
+                seqnum = getseqnum(file_)
 
-            # Absolute path to file.
-            f.write('File' + entry_num + '=' +
-                    os.path.join(directory, file_) + '\n')
-            # Title of file displayed to user.
-            f.write('Title' + entry_num + '=' +
-                    title + ' ' + title_num + '\n')
+                # Mark unsortable files as an 'Extra' in the playlist.
+                if seqnum == 9999:
+                    title_num = 'Extra ' + str(extra)
+                    extra += 1
+                else:
+                    title_num = str(seqnum)
 
-        # Standard data for playlist file.
-        f.write('\nNumberOfEntries=' + str(i))
-        f.write('\nVersion=2\n')
+                # Absolute path to file.
+                f.write('File' + entry_num + '=' +
+                        os.path.join(directory, file_) + '\n')
+                # Title of file displayed to user.
+                f.write('Title' + entry_num + '=' +
+                        title + ' ' + title_num + '\n')
 
-        # End of enumerated for loop
-    # End of with block
+            # Standard data for playlist file.
+            f.write('\nNumberOfEntries=' + str(i))
+            f.write('\nVersion=2\n')
+
+            # End of enumerated for loop
+        # End of with block
+    except PlaylistExistsError as e:
+        print '\n{} already exists.'.format(e)
+    except:
+        pass
+    # End of try...except block
 # End of mkpls function
 
 
@@ -158,40 +178,54 @@ def mkm3u(directory, file_list):
 
     # Retrieve title of media from filesystem structure, and make it
     # more human readable.
+    # TODO: Perform more intelligent title extraction
+    #       (comparison of start_dir against directory?)
     name = os.path.basename(directory)
     title = re.sub('[._]', ' ', name)
 
-    # Open the file using the same basename as used in the filesystem.
-    # FIXME: Check if file exists before writing to it.
-    with open(name + '.m3u', 'w') as f:
+    file_ = name + '.m3u'
 
-        # Used to count extra materials.
-        extra = 1
+    try:
+        if os.path.isfile(file_):
+            raise PlaylistExistsError(file_)
 
-        # Heading for M3U files, skip a line.
-        f.write('#EXTM3U\n\n')
+        # Open the file using the same basename as used in the filesystem.
+        with open(file_, 'w') as f:
 
-        # Iterate, getting an entry number and filename for each file.
-        for file_ in file_list:
+            # Used to count extra materials.
+            extra = 1
 
-            # Sequence number for actual content.
-            seqnum = getseqnum(file_)
+            # Heading for M3U files, skip a line.
+            f.write('#EXTM3U\n\n')
 
-            # Mark unsortable files as an 'Extra' in the playlist.
-            if seqnum == 9999:
-                title_num = 'Extra ' + str(extra)
-                extra += 1
-            else:
-                title_num = str(seqnum)
+            # Iterate, getting an entry number and filename for each file.
+            for file_ in file_list:
 
-            # FIXME: Make sure this is valid in an m3u
-            # Title of file displayed to user.
-            f.write('#EXTINF:' + title + ' ' + title_num + '\n')
-            # Absolute path to file.
-            f.write(os.path.join(directory, file_) + '\n')
+                # Sequence number for actual content.
+                seqnum = getseqnum(file_)
 
-        # End of for loop
-    # End of with block
+                # Mark unsortable files as an 'Extra' in the playlist.
+                if seqnum == 9999:
+                    title_num = 'Extra ' + str(extra)
+                    extra += 1
+                else:
+                    title_num = str(seqnum)
+
+                # TODO: Make sure this is valid in an m3u
+                # Title of file displayed to user.
+                f.write('#EXTINF:' + title + ' ' + title_num + '\n')
+                # Absolute path to file.
+                f.write(os.path.join(directory, file_) + '\n')
+
+            # End of for loop
+        # End of with block
+
+    except PlaylistExistsError as e:
+        print '\n{} already exists.'.format(e)
+    except:
+        pass
+
+    # End of try...except block
 # End of mkm3u function
 
 # TODO: Make it easier to get a list from sortfiles (?)
@@ -251,8 +285,6 @@ def getseqnum(filename):
 
 
 # Begin customized module Exceptions.
-# TODO: Clean this up to better conform to standard Exceptions.
-#       Also, fix try...excepts to match same conventions.
 class Error(Exception):
     """Base class for exceptions caused by methods in """ \
             """the media_list module.
