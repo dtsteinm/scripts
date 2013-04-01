@@ -15,14 +15,13 @@ import subprocess
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.7.5'
+__version__ = '0.8'
 __license__ = 'WTFPL'
 
 
 # walk looks for directories containing mp3 files,
 # and calls mp3gain() when we have something to do.
 # TODO: Add messages displaying progress of entire file structure.
-# TODO: Allow settings to be passed to mp3gain(); possibly 'force' and 'skip'?
 def walk(start_dir=os.getcwd(), **kwargs):
     """Traverses the filesystem structure, looking for directories """ \
             """containing MP3 files, and calls mp3gain() when appropriate.
