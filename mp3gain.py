@@ -11,7 +11,7 @@
 import os
 import re
 import sys
-import subprocess
+import subprocess as sp
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
@@ -62,8 +62,8 @@ def walk(start_dir=os.getcwd(), **kwargs):
 
     try:
         # Check to see if the mp3gain utility is installed.
-        if subprocess.call('/usr/bin/mp3gain -v', shell=True,
-                stderr=subprocess.STDOUT, stdout=subprocess.PIPE) is 127:
+        if sp.call('/usr/bin/mp3gain -v', shell=True,
+                stderr=sp.STDOUT, stdout=sp.PIPE) is 127:
             raise NoExecutableError()
 
         # Check to make sure we're working in a real directory.
@@ -197,8 +197,8 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         sys.stdout.flush()
 
         # Create a subprocess, and call the command inside of a shell.
-        proc = subprocess.Popen(command, cwd=directory, shell=True,
-                stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+        proc = sp.Popen(command, cwd=directory, shell=True,
+                stderr=sp.STDOUT, stdout=sp.PIPE)
         proc.wait()
 
         # 127 is the specific return code from the Linux shell
@@ -216,7 +216,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
     # Raised when  directory does not contain any MP3s.
     except NoMP3Error as e:
         print '\r{} did not contain any MP3s.'.format(e)
-    # Raised when the subprocess.Popen() does not execute successfully.
+    # Raised when the sp.Popen() does not execute successfully.
     except ProcessingError as e:
         print '\rThere was an error processing {}.'.format(e)
     # Since this can be called by itself, let's also
