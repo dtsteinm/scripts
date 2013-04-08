@@ -11,7 +11,7 @@ import Levenshtein
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.2'
+__version__ = '0.2.1'
 __license__ = 'WTFPL'
 
 
@@ -20,13 +20,15 @@ class PunGenerator:
 
     # TODO: Add other pun lists
     # TODO: Add automatic words for other puns
-    squid = {'ink': '',
-            'fin': '',
-            'gill': '',
-            'kelp': ['hell', 'heck'],
-            'beak': ['mouth', 'face'],
-            'kraken': '',
-            'mollusk': ''
+    squid = {
+            'ink':      ['', ],
+            'fin':      ['', ],
+            'gill':     ['', ],
+            'kelp':     ['hell', 'heck'],
+            'keel':     ['', ],
+            'beak':     ['mouth', 'face'],
+            'kraken':   ['', ],
+            'mollusk':  ['', ]
             }
 
     # TODO: Allow choosing pun list on object creation
@@ -77,8 +79,10 @@ class PunGenerator:
     def add_pun(self, string):
         '''Add a new pun to the list of available puns.'''
 
-        # Add a new pun to the dictionay.
+        # Add a new pun to the dictionary.
         # TODO: Add corresponding words as well
         self.puns[string] = ''
 
-# TODO: Add command line stuff down here
+# TODO: Add command line stuff and any exceptions down here
+
+# vim: set ts=4 sts=4 sw=4 et:
