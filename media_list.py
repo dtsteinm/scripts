@@ -18,6 +18,7 @@ __license__ = 'WTFPL'
 
 
 # TODO: Make playlist_type selection clearer.
+# TODO: Add a 'depth' option, or something along those lines.
 def makeplaylist(start_dir=os.getcwd(), playlist_type='pls'):
     """Create media playlist(s) for specified directory and playlist """\
             """type.
@@ -240,6 +241,7 @@ def sortfiles(files):
             """'Another_Testfile_No._23_[CRC32CRC].ext']
     """
 
+    # TODO: Allow sorting of files in format SXXEYY
     return sorted(files, key=lambda number: getseqnum(number))
 
 

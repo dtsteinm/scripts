@@ -161,7 +161,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
     """
 
     # Assign attributes from kwargs, applying a default value as needed.
-    # TODO: Look into other possible options, like 'undo'
+    # TODO: Look into other possible options, like 'undo' and clipping stuff
     recalc = kwargs.pop('recalc', False)
     delete = kwargs.pop('delete', False)
     skip = kwargs.pop('skip', False)
