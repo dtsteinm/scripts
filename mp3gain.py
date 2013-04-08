@@ -51,11 +51,11 @@ def walk(start_dir=os.getcwd(), **kwargs):
     # Create a dictionary of options to override mp3gain()'s defaults.
     options = {}
     if force:
-        options['recalc']=True
+        options['recalc'] = True
     if skip:
-        options['skip']=True
+        options['skip'] = True
     if clear:
-        options['delete']=True
+        options['delete'] = True
 
     # Flag to indicate work was done.
     flag = False
