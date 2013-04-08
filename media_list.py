@@ -121,7 +121,7 @@ def mkpls(directory, file_list):
     try:
         if os.path.isfile(file_):
             raise PlaylistExistsError(file_)
-        
+
         # Open the file using the same basename as used in the filesystem.
         with open(file_, 'w') as f:
 
@@ -229,6 +229,7 @@ def mkm3u(directory, file_list):
     # End of try...except block
 # End of mkm3u function
 
+
 # TODO: Make it easier to get a list from sortfiles (?)
 def sortfiles(files):
     """Returns sorted list of files in passed directory.
@@ -329,18 +330,18 @@ class PlaylistExistsError(Error):
 # If we were called from command line...
 if __name__ == "__main__":
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Create PLS or M3U \
             playlists")
     parser.add_argument('-v', '--version', action='version',
             version='%(prog)s ' + __version__)
-    parser.add_argument('-t','--playlist-type', default='pls',
-            choices=['pls','m3u'], help='type of playlist to create')
+    parser.add_argument('-t', '--playlist-type', default='pls',
+            choices=['pls', 'm3u'], help='type of playlist to create')
     parser.add_argument('directory', nargs='?',
             help='starting directory')
     args = parser.parse_args()
 
-    # FIXME: makeplaylist does not like non-default values of 
+    # FIXME: makeplaylist does not like non-default values of
     #        args.playlist_type
     if args.directory is not None:
         makeplaylist(args.directory, args.playlist_type)
