@@ -20,8 +20,14 @@ class PunGenerator:
 
     # TODO: Add other pun lists
     # TODO: Add automatic words for other puns
-    squid = {'ink': '', 'fin': '', 'gill': '', 'beak': ['mouth', 'face'],
-            'kraken': '', 'mollusk': ''}
+    squid = {'ink': '',
+            'fin': '',
+            'gill': '',
+            'kelp': ['hell', 'heck'],
+            'beak': ['mouth', 'face'],
+            'kraken': '',
+            'mollusk': ''
+            }
 
     # TODO: Allow choosing pun list on object creation
     def __init__(self):
