@@ -7,29 +7,31 @@
 # Last updated: April 7, 2013
 
 '''Generate puns for a given phrase.'''
+# TODO: difflib might be good enough...
 import Levenshtein as leven
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.2.1'
+__version__ = '0.2.5'
 __license__ = 'WTFPL'
 
 
 class PunGenerator:
     '''Generate the puns.'''
 
-    # TODO: Add other pun lists
+    # TODO: Add other pun dictionaries
     # TODO: Add automatic words for other puns
     squid = {
-            'ink':      ['going', 'invade'],
-            'fin':      ['', ],
-            'gill':     ['', ],
-            'kelp':     ['hell', 'heck'],
-            'keel':     ['', ],
-            'beak':     ['mouth', 'face'],
-            'shrimp':   ['', ],
-            'kraken':   ['', ],
-            'mollusk':  ['', ]
+            'ink':      [('going', 'goink'), ('invade', 'inkvade')],
+            'fin':      [('', None), ],
+            'gill':     [('', None), ],
+            'kelp':     [('hell', None), ('heck', None)],
+            'keel':     [('', None), ],
+            'beak':     [('mouth', None), ('face', None)],
+            'shrimp':   [('', None), ],
+            'kraken':   [('', None), ],
+            'mollusk':  [('', None), ],
+            'squid':    [('kidding', 'squidding'), ],
             }
 
     # TODO: Allow choosing pun list on object creation
@@ -50,14 +52,12 @@ class PunGenerator:
         for pun in self.puns:
             # Check to see if there is a defined replacement in the
             # pun dictionary.
-            if string in self.puns[pun]:
-                # TODO: If I'm able to implement a substring replacement,
-                #       this 1 will guarantee that doesn't happen;
-                #       might need to include desired ratio in dictionary,
-                #       f.e. {'beak':('mouth',1),
-                #             'ink':[('think',1),('invade',.5)]}
-                #       No wonder I couldn't find a pun generator for squids
-                return pun, 1
+            for word, replace in self.puns[pun]:
+                if string == word:
+                    if replace is None:
+                        return pun, 1
+                    else:
+                        return pun, replace
             current_ratio = leven.ratio(pun, string)
             if current_ratio > best_pun[1]:
                 best_pun = pun, current_ratio
@@ -68,6 +68,7 @@ class PunGenerator:
 
     def generate_pun(self, string):
         '''Given a phrase, replace the best pun possibility.'''
+        # TODO: Multiple puns per line
 
         self.string = string.strip()
 
@@ -78,18 +79,20 @@ class PunGenerator:
         # Find the best word to use and it's corresponding best pun.
         for word in self.string.split():
             new_pun = self.select_pun(word)
+            # Check if select_pun returned a defined replacement
+            # word instead of the usual Levenshtein ratio.
+            if str(new_pun[1]).isalpha():
+                best_pun = new_pun
+                to_replace = word
+                break
             if new_pun[1] > best_pun[1]:
                 best_pun = new_pun
                 to_replace = word
 
-        if best_pun[1] <= 0.5:
-            pun = self.string.replace(to_replace, best_pun[0])
-            # TODO: what we really want to do is sub-string replacements
-            #       f.e. 'invade' -> 'ink-vade'
-            # edit = leven.editops(best_pun[0], to_replace)
-            # replace = leven.apply_edit(edit[:1], best_pun[0],
-                    # to_replace)
-            # pun = self.string.replace(to_replace, replace)
+        # Use a defined replacement word if available, otherwise
+        # just use the dictionary keyword.
+        if str(best_pun[1]).isalpha():
+            pun = self.string.replace(to_replace, best_pun[1])
         else:
             pun = self.string.replace(to_replace, best_pun[0])
         return pun.capitalize()
@@ -99,7 +102,7 @@ class PunGenerator:
 
         # Add a new pun to the dictionary.
         # TODO: Add corresponding words as well
-        self.puns[string] = ''
+        self.puns[string] = ('', None)
 
 # TODO: Add command line stuff and any exceptions down here
 
