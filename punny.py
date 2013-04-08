@@ -7,7 +7,7 @@
 # Last updated: April 7, 2013
 
 '''Generate puns for a given phrase.'''
-import Levenshtein
+import Levenshtein as leven
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
@@ -21,12 +21,13 @@ class PunGenerator:
     # TODO: Add other pun lists
     # TODO: Add automatic words for other puns
     squid = {
-            'ink':      ['', ],
+            'ink':      ['going', 'invade'],
             'fin':      ['', ],
             'gill':     ['', ],
             'kelp':     ['hell', 'heck'],
             'keel':     ['', ],
             'beak':     ['mouth', 'face'],
+            'shrimp':   ['', ],
             'kraken':   ['', ],
             'mollusk':  ['', ]
             }
@@ -38,6 +39,9 @@ class PunGenerator:
     def select_pun(self, string):
         '''Choose the best available pun.'''
 
+        # Clean unwanted punctuation.
+        string = string.strip('''.,;:?!/'"''')
+
         # Store the currently best pun option, and it's Levenshtein
         # ratio (0-1) in a tuple to compare it to later options.
         best_pun = ('', 0)
@@ -47,8 +51,14 @@ class PunGenerator:
             # Check to see if there is a defined replacement in the
             # pun dictionary.
             if string in self.puns[pun]:
+                # TODO: If I'm able to implement a substring replacement,
+                #       this 1 will guarantee that doesn't happen;
+                #       might need to include desired ratio in dictionary,
+                #       f.e. {'beak':('mouth',1),
+                #             'ink':[('think',1),('invade',.5)]}
+                #       No wonder I couldn't find a pun generator for squids
                 return pun, 1
-            current_ratio = Levenshtein.ratio(pun, string)
+            current_ratio = leven.ratio(pun, string)
             if current_ratio > best_pun[1]:
                 best_pun = pun, current_ratio
 
@@ -66,14 +76,22 @@ class PunGenerator:
         best_pun = ('', 0)
 
         # Find the best word to use and it's corresponding best pun.
-        # TODO: Allow for sub-string replacements, f.e. 'ink-vade'
         for word in self.string.split():
             new_pun = self.select_pun(word)
             if new_pun[1] > best_pun[1]:
                 best_pun = new_pun
                 to_replace = word
 
-        pun = self.string.replace(to_replace, best_pun[0])
+        if best_pun[1] <= 0.5:
+            pun = self.string.replace(to_replace, best_pun[0])
+            # TODO: what we really want to do is sub-string replacements
+            #       f.e. 'invade' -> 'ink-vade'
+            # edit = leven.editops(best_pun[0], to_replace)
+            # replace = leven.apply_edit(edit[:1], best_pun[0],
+                    # to_replace)
+            # pun = self.string.replace(to_replace, replace)
+        else:
+            pun = self.string.replace(to_replace, best_pun[0])
         return pun.capitalize()
 
     def add_pun(self, string):
