@@ -12,7 +12,7 @@ import Levenshtein as leven
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 __license__ = 'WTFPL'
 
 
@@ -42,7 +42,7 @@ class PunGenerator:
         '''Choose the best available pun.'''
 
         # Clean unwanted punctuation.
-        string = string.strip('''.,;:?!/'"''')
+        string = string.strip('''.,;:?!/'" ''').lower()
 
         # Store the currently best pun option, and it's Levenshtein
         # ratio (0-1) in a tuple to compare it to later options.
