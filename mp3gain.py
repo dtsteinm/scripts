@@ -154,6 +154,8 @@ def mp3gain(directory=os.getcwd(), **kwargs):
 
     Attributes:
       directory -- Directory on which to apply ReplayGain
+      allowclip -- Ignore warnings about track clipping (False)
+      noclip -- Automatically lower gain to avoid clipping (True)
       recalc -- Force re-calculation of ReplayGain tags (False)
       delete -- Delete current ReplayGain tags (False)
       skip -- Do not read/write ReplayGain tags (False)
@@ -161,7 +163,9 @@ def mp3gain(directory=os.getcwd(), **kwargs):
     """
 
     # Assign attributes from kwargs, applying a default value as needed.
-    # TODO: Look into other possible options, like 'undo' and clipping stuff
+    # TODO: Look into other possible options, like 'undo'
+    allowclip = kwargs.pop('noclip', False)
+    noclip = kwargs.pop('noclip', True)
     recalc = kwargs.pop('recalc', False)
     delete = kwargs.pop('delete', False)
     skip = kwargs.pop('skip', False)
@@ -184,6 +188,11 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         # Skip reading/writing of ReplayGain tags
         if skip:
             command += '-s s '
+        # Ignore or lower gain if clipping warning 
+        if allowclip:
+            command += '-c '
+        if noclip:
+            command += '-k '
         # Preserve access/creation/modified times from file
         if preserve:
             command += '-p '
