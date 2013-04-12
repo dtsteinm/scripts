@@ -15,7 +15,7 @@ import subprocess as sp
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.8'
+__version__ = '0.8.2'
 __license__ = 'WTFPL'
 
 
@@ -37,8 +37,7 @@ def walk(start_dir=os.getcwd(), **kwargs):
 
     # Clean up supplied directory (whitespace, trailing /).
     start_dir = start_dir.strip()
-    if start_dir[-1] is os.sep:
-        start_dir = start_dir[:-1]
+    start_dir = start_dir.rstrip(os.sep)
 
     # Get kwargs, using defaults if not specified.
     force = kwargs.pop('force', False)
@@ -60,6 +59,7 @@ def walk(start_dir=os.getcwd(), **kwargs):
     # Flag to indicate work was done.
     flag = False
 
+    # TODO: Allow user to break out of entire program, like <C-c><C-c>
     try:
         # Check to see if the mp3gain utility is installed.
         if sp.call('/usr/bin/mp3gain -v', shell=True,
@@ -188,7 +188,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         # Skip reading/writing of ReplayGain tags
         if skip:
             command += '-s s '
-        # Ignore or lower gain if clipping warning 
+        # Ignore or lower gain if clipping warning
         if allowclip:
             command += '-c '
         if noclip:
@@ -206,6 +206,8 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         sys.stdout.flush()
 
         # Create a subprocess, and call the command inside of a shell.
+        # FIXME: This seems to hang occasionally, except when stdout is
+        #        not redirected
         proc = sp.Popen(command, cwd=directory, shell=True,
                 stderr=sp.STDOUT, stdout=sp.PIPE)
         proc.wait()
@@ -326,6 +328,7 @@ class NoExecutableError(Error):
 if __name__ == '__main__':
     import argparse
 
+    # TODO: Add other options
     parser = argparse.ArgumentParser(description="Applies ReplayGain \
             tags to MP3 files, normalizing volume")
     parser.add_argument('directory', nargs='?',
