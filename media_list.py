@@ -333,16 +333,17 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Create PLS or M3U \
             playlists")
-    parser.add_argument('-v', '--version', action='version',
-            version='%(prog)s ' + __version__)
-    parser.add_argument('-t', '--playlist-type', default='pls',
-            choices=['pls', 'm3u'], help='type of playlist to create')
     parser.add_argument('directory', nargs='?',
             help='starting directory')
+    parser.add_argument('-t', '--playlist-type', default='pls',
+            choices=['pls', 'm3u'], help='type of playlist to create')
+    parser.add_argument('-v', '--version', action='version',
+            version='%(prog)s ' + __version__)
     args = parser.parse_args()
 
     # FIXME: makeplaylist does not like non-default values of
     #        args.playlist_type
+    # TODO: Don't know if I want this to run with a default anymore
     if args.directory is not None:
         makeplaylist(args.directory, args.playlist_type)
     else:
