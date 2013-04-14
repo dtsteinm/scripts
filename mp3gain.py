@@ -16,7 +16,7 @@ import tempfile as temp
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.8.2'
+__version__ = '0.8.5'
 __license__ = 'WTFPL'
 
 
@@ -259,6 +259,11 @@ def mp3gain(directory=os.getcwd(), **kwargs):
     # TODO: truncate directory
     else:
         print '\rFinished with:', directory
+
+    # Close our temporary file as we leave the try block.
+    finally:
+        tmp.close()
+
 
     # End of isdir()|Popen() try...except block
 # End of mp3gain() function
