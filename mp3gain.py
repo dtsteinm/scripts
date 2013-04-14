@@ -12,6 +12,7 @@ import os
 import re
 import sys
 import subprocess as sp
+import tempfile as temp
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
@@ -199,17 +200,22 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         command += '*.mp3'
 
         # Display message when we start a directory
+        # TODO: truncate directory
         print 'Starting:', directory,
         # Flush stdout in order to force Python to print the previous
         # line with a trailing comma/no newline; otherwise, it waits
         # for the rest of the line, which, is usually a return.
         sys.stdout.flush()
 
+        # mp3gain can produce a lot of output, and sp.PIPE only takes
+        # about 65kb of data before it shuts down. This TemporaryFile
+        # object should take as much data as we can through at it,
+        # and discard it on close.
+        tmp = temp.TemporaryFile()
+
         # Create a subprocess, and call the command inside of a shell.
-        # FIXME: This seems to hang occasionally, except when stdout is
-        #        not redirected
         proc = sp.Popen(command, cwd=directory, shell=True,
-                stderr=sp.STDOUT, stdout=sp.PIPE)
+                stderr=sp.STDOUT, stdout=tmp)
         proc.wait()
 
         # 127 is the specific return code from the Linux shell
@@ -236,6 +242,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         print '\r{} is not a real directory.'.format(e)
 
     # Catch KeyboardInterrupts as a cue to cancel processing the current dir.
+    # TODO: truncate directory
     except KeyboardInterrupt:
         print '\rSkipping: {}'.format(directory)
 
@@ -249,6 +256,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         print '\nSomething went horribly wrong processing our files!'
 
     # Everything went according to plan.
+    # TODO: truncate directory
     else:
         print '\rFinished with:', directory
 
