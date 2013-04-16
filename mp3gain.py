@@ -16,7 +16,7 @@ import tempfile as temp
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 __license__ = 'WTFPL'
 
 
@@ -198,9 +198,10 @@ def mp3gain(directory=os.getcwd(), **kwargs):
             command += '-p '
         command += '*.mp3'
 
+        dirbase = os.path.basename(directory)
+
         # Display message when we start a directory
-        # TODO: truncate directory
-        print 'Starting:', directory,
+        print 'Starting:', dirbase,
         # Flush stdout in order to force Python to print the previous
         # line with a trailing comma/no newline; otherwise, it waits
         # for the rest of the line, which, is usually a return.
@@ -241,9 +242,8 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         print '\r{} is not a real directory.'.format(e)
 
     # Catch KeyboardInterrupts as a cue to cancel processing the current dir.
-    # TODO: truncate directory
     except KeyboardInterrupt:
-        print '\rSkipping: {}'.format(directory)
+        print '\rSkipping: {}'.format(dirbase)
 
     # TODO: Has to be some way to suppress this output when mp3gain()
     # is not called from walk().
@@ -255,9 +255,8 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         print '\nSomething went horribly wrong processing our files!'
 
     # Everything went according to plan.
-    # TODO: truncate directory
     else:
-        print '\rFinished with:', directory
+        print '\rFinished with:', dirbase,
 
     # Close our temporary file as we leave the try block.
     finally:
