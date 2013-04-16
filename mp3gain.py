@@ -16,7 +16,7 @@ import tempfile as temp
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.8.5'
+__version__ = '0.9.1'
 __license__ = 'WTFPL'
 
 
@@ -214,7 +214,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
 
         # Create a subprocess, and call the command inside of a shell.
         proc = sp.Popen(command, cwd=directory, shell=True,
-                stderr=sp.STDOUT)
+                stderr=sp.STDOUT, stdout=tmp)
         proc.wait()
 
         # 127 is the specific return code from the Linux shell
