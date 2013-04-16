@@ -41,11 +41,9 @@ def walk(start_dir=os.getcwd(), **kwargs):
     start_dir = start_dir.rstrip(os.sep)
 
     # Get kwargs, using defaults if not specified.
+    # TODO: Additional options
     force = kwargs.pop('force', False)
-    if force:
-        skip = kwargs.pop('skip', False)
-    else:
-        skip = kwargs.pop('skip', True)
+    skip = kwargs.pop('skip', False)
     clear = kwargs.pop('clear', False)
 
     # Create a dictionary of options to override mp3gain()'s defaults.
@@ -165,6 +163,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
 
     # Assign attributes from kwargs, applying a default value as needed.
     # TODO: Look into other possible options, like 'undo'
+    # TODO: User may prefer APE over ID3v2, for whatever reason
     allowclip = kwargs.pop('noclip', False)
     noclip = kwargs.pop('noclip', True)
     recalc = kwargs.pop('recalc', False)
@@ -215,7 +214,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
 
         # Create a subprocess, and call the command inside of a shell.
         proc = sp.Popen(command, cwd=directory, shell=True,
-                stderr=sp.STDOUT, stdout=tmp)
+                stderr=sp.STDOUT)
         proc.wait()
 
         # 127 is the specific return code from the Linux shell
