@@ -1,1 +1,1 @@
-*.txt filter=dater filter=revision
+*.txt filter=dater,revision
