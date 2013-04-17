@@ -1,8 +1,0 @@
-#!/usr/bin/env python2
-
-import re
-import sys
-
-data = sys.stdin.read()
-data = re.sub(r'\$Date[^\$].*\$','$Date$', data)
-print re.sub(r'-[0-9a-f]{7}','$Revision$', data),
