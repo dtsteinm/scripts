@@ -139,4 +139,9 @@ class Error(Exception):
     '''Base exception for the punny module.'''
     pass
 
+
+if __name__ == '__main__':
+    import sys
+    print PunGenerator().generate_pun(''.join(sys.argv[1:]))
+
 # vim: set ts=4 sts=4 sw=4 et:
