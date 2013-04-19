@@ -12,7 +12,7 @@ import Levenshtein as leven
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.2.6'
+__version__ = '0.3'
 __license__ = 'WTFPL'
 
 
@@ -23,14 +23,14 @@ class PunGenerator:
     # TODO: Add automatic words for other puns
     squid = {
             'ink':      [('going', 'goink'), ('invade', 'inkvade')],
-            'fin':      [('', None), ],
-            'gill':     [('', None), ],
+            'fin':      [(None, None), ],
+            'gill':     [(None, None), ],
             'kelp':     [('hell', None), ('heck', None)],
-            'keel':     [('', None), ],
+            'keel':     [(None, None), ],
             'beak':     [('mouth', None), ('face', None)],
-            'shrimp':   [('', None), ],
-            'kraken':   [('', None), ],
-            'mollusk':  [('', None), ],
+            'shrimp':   [(None, None), ],
+            'kraken':   [(None, None), ],
+            'mollusk':  [(None, None), ],
             'squid':    [('kidding', 'squidding'), ],
             }
 
@@ -97,12 +97,17 @@ class PunGenerator:
             pun = self.string.replace(to_replace, best_pun[0])
         return pun.capitalize()
 
-    def add_pun(self, string):
+    def add_pun(self, pun, word=None, replace=None):
         '''Add a new pun to the list of available puns.'''
 
         # Add a new pun to the dictionary.
-        # TODO: Add corresponding words as well
-        self.puns[string] = ('', None)
+        if self.puns[pun]:
+            self.puns[pun] += [(word, replace)]
+            for i, t in enumerate(self.puns[pun]):
+                if self.puns[pun][i] == (None, None):
+                    del self.puns[pun][i]
+        else:
+            self.puns[pun] = [(word, replace)]
 
 # TODO: Add command line stuff and any exceptions down here
 
