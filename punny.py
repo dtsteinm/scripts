@@ -12,7 +12,7 @@ from string import punctuation as punc
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.3'
+__version__ = '0.4'
 __license__ = 'WTFPL'
 
 
