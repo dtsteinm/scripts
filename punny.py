@@ -133,6 +133,10 @@ class PunGenerator:
         else:
             self.puns[pun] = [(word, replace)]
 
+
 # TODO: Add command line stuff and any exceptions down here
+class Error(Exception):
+    '''Base exception for the punny module.'''
+    pass
 
 # vim: set ts=4 sts=4 sw=4 et:
