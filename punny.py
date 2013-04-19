@@ -7,7 +7,6 @@
 # Last updated: April 7, 2013
 
 '''Generate puns for a given phrase.'''
-# TODO: difflib might be good enough...
 from difflib import SequenceMatcher as seqmatch
 
 __all__ = ['PunGenerator']
@@ -39,7 +38,16 @@ class PunGenerator:
         self.puns = self.squid
 
     def select_pun(self, string):
-        '''Choose the best available pun.'''
+        '''Choose the best available pun.
+
+        >>> p = PunGenerator()
+        >>> p.select_pun('think')
+        ('ink', 0.75)
+        >>> p.select_pun('going')
+        ('ink', 'goink')
+        >>> p.select_pun('hell')
+        ('kelp', 1)
+        '''
 
         # Clean unwanted punctuation.
         # TODO: Would like to save this...
