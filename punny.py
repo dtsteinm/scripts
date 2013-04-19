@@ -8,6 +8,7 @@
 
 '''Generate puns for a given phrase.'''
 from difflib import SequenceMatcher as seqmatch
+from string import punctuation as punc
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
@@ -49,13 +50,18 @@ class PunGenerator:
         ('kelp', 1)
         '''
 
-        # Clean unwanted punctuation.
-        # TODO: Would like to save this...
-        string = string.strip('''.,;:?!/'" ''').lower()
+        # Save punctuation marks found in string.
+        mark = [x for x in list(punc) if x in string]
+        # Clean unwanted punctuation, assuming all punctuation was at
+        # the end of the string.
+        string = string[:-len(mark)]
 
         # Store the currently best pun option, and it's Levenshtein
         # ratio (0-1) in a tuple to compare it to later options.
         best_pun = (None, None)
+
+        # Re-combine the words and punctuation.
+        join = lambda w, p: ''.join([w] + p)
 
         # Compare each pun option; better puns replace earlier options.
         for pun in self.puns:
@@ -64,14 +70,14 @@ class PunGenerator:
             for word, replace in self.puns[pun]:
                 if string == word:
                     if replace is None:
-                        return pun, 1
+                        return join(pun, mark), 1
                     else:
-                        return pun, replace
+                        return join(pun, mark), join(replace, mark)
             # Calculate a diff on two strings, without considering
             # anything as junk, and return the ratio.
             current_ratio = seqmatch(None, pun, string).ratio()
             if current_ratio > best_pun[1]:
-                best_pun = pun, current_ratio
+                best_pun = join(pun, mark), current_ratio
 
         # Return both the pun itself, and the ratio so that
         # generate_pun() can find the best pun for a phrase.
