@@ -22,7 +22,8 @@ class PunGenerator:
     # TODO: Add other pun dictionaries
     # TODO: Add automatic words for other puns
     squid = {
-            'ink':      [('going', 'goink'), ('invade', 'inkvade')],
+            'ink':      [('going', 'goink'), ('invade', 'inkvade'),
+                         ('thinking', 'inking')],
             'fin':      [(None, None), ],
             'gill':     [(None, None), ],
             'kelp':     [('hell', None), ('heck', None)],
@@ -44,10 +45,16 @@ class PunGenerator:
         >>> p = PunGenerator()
         >>> p.select_pun('think')
         ('ink', 0.75)
+        >>> p.select_pun('think?')
+        ('ink?', 0.75)
         >>> p.select_pun('going')
         ('ink', 'goink')
+        >>> p.select_pun('going?')
+        ('ink?', 'goink?')
         >>> p.select_pun('hell')
         ('kelp', 1)
+        >>> p.select_pun('hell?')
+        ('kelp?', 1)
         '''
 
         # Save punctuation marks found in string.
