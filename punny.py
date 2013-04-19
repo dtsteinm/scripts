@@ -8,7 +8,7 @@
 
 '''Generate puns for a given phrase.'''
 # TODO: difflib might be good enough...
-import Levenshtein as leven
+from difflib import SequenceMatcher as seqmatch
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
@@ -42,6 +42,7 @@ class PunGenerator:
         '''Choose the best available pun.'''
 
         # Clean unwanted punctuation.
+        # TODO: Would like to save this...
         string = string.strip('''.,;:?!/'" ''').lower()
 
         # Store the currently best pun option, and it's Levenshtein
@@ -58,7 +59,9 @@ class PunGenerator:
                         return pun, 1
                     else:
                         return pun, replace
-            current_ratio = leven.ratio(pun, string)
+            # Calculate a diff on two strings, without considering
+            # anything as junk, and return the ratio.
+            current_ratio = seqmatch(None, pun, string).ratio()
             if current_ratio > best_pun[1]:
                 best_pun = pun, current_ratio
 
