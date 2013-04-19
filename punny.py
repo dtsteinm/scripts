@@ -46,7 +46,7 @@ class PunGenerator:
 
         # Store the currently best pun option, and it's Levenshtein
         # ratio (0-1) in a tuple to compare it to later options.
-        best_pun = ('', 0)
+        best_pun = (None, None)
 
         # Compare each pun option; better puns replace earlier options.
         for pun in self.puns:
@@ -74,7 +74,7 @@ class PunGenerator:
 
         # Store the currently best pun option, and it's Levenshtein
         # ratio (0-1) in a tuple to compare it to later options.
-        best_pun = ('', 0)
+        best_pun = (None, None)
 
         # Find the best word to use and it's corresponding best pun.
         for word in self.string.split():
