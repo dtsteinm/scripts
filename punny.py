@@ -4,7 +4,7 @@
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING file for more details.
-# Last updated: April 7, 2013
+# Last updated: April 19, 2013
 
 '''Generate puns for a given phrase.'''
 from difflib import SequenceMatcher as seqmatch
@@ -12,7 +12,7 @@ from string import punctuation as punc
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.4'
+__version__ = '0.4.1'
 __license__ = 'WTFPL'
 
 
@@ -24,7 +24,7 @@ class PunGenerator:
     squid = {
             'ink':      [('going', 'goink'), ('invade', 'inkvade'),
                          ('thinking', 'inking')],
-            'fin':      [(None, None), ],
+            'fin':      [('even', 'efin'), ],
             'gill':     [(None, None), ],
             'kelp':     [('hell', None), ('heck', None)],
             'keel':     [(None, None), ],
@@ -67,7 +67,7 @@ class PunGenerator:
         # ratio (0-1) in a tuple to compare it to later options.
         best_pun = (None, None)
 
-        # Re-combine the words and punctuation.
+        # Later re-combinanition of the words and punctuation.
         join = lambda w, p: ''.join([w] + p)
 
         # Compare each pun option; better puns replace earlier options.
@@ -105,7 +105,10 @@ class PunGenerator:
             new_pun = self.select_pun(word)
             # Check if select_pun returned a defined replacement
             # word instead of the usual Levenshtein ratio.
-            if str(new_pun[1]).isalpha():
+            # Because a specified replacement word (new_pun[1]) can
+            # contain punctuation, this test could fail when we want
+            # it to pass when checking the full string.
+            if str(new_pun[1])[0].isalpha():
                 best_pun = new_pun
                 to_replace = word
                 break
@@ -115,7 +118,10 @@ class PunGenerator:
 
         # Use a defined replacement word if available, otherwise
         # just use the dictionary keyword.
-        if str(best_pun[1]).isalpha():
+        # Because a specified replacement word (best_pun[1]) can
+        # contain punctuation, this test could fail when we want
+        # it to pass when checking the full string.
+        if str(best_pun[1])[0].isalpha():
             pun = self.string.replace(to_replace, best_pun[1])
         else:
             pun = self.string.replace(to_replace, best_pun[0])
