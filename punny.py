@@ -61,7 +61,7 @@ class PunGenerator:
         mark = [x for x in list(punc) if x in string]
         # Clean unwanted punctuation, assuming all punctuation was at
         # the end of the string.
-        string = string[:-len(mark)]
+        string = string[:(-len(mark) if len(mark) != 0 else None)]
 
         # Store the currently best pun option, and it's Levenshtein
         # ratio (0-1) in a tuple to compare it to later options.
