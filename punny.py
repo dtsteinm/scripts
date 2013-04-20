@@ -139,6 +139,12 @@ class PunGenerator:
         else:
             self.puns[pun] = [(word, replace)]
 
+    # TODO: PrettyPrint-ing of puns
+    def print_puns(self):
+        '''Display the current pun dictionary, in a prettily formatted ''' \
+                '''manner.'''
+        pass
+
 
 # TODO: Add command line stuff and any exceptions down here
 class Error(Exception):
