@@ -13,7 +13,7 @@ from re import sub
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 __license__ = 'WTFPL'
 
 
@@ -27,18 +27,24 @@ class PunGenerator:
                              ('invade', 'inkvade'),
                              ('thinking', 'inking')],
             'fin':          [('even', 'efin'), ],
+            'sea':          [(None, None), ],
             'gill':         [(None, None), ],
             'kelp':         [('hell', None),
-                             ('heck', None)],
+                             ('heck', None), ],
             'keel':         [(None, None), ],
             'beak':         [('mouth', None),
-                             ('face', None)],
+                             ('face', None), ],
+            'pier':         [(None, None), ],
+            'tide':         [(None, None), ],
+            'squid':        [('kidding', 'squidding'), ],
+            'shore':        [(None, None), ],
+            'shell':        [(None, None), ],
+            'coast':        [(None, None), ],
             'shrimp':       [(None, None), ],
             'kraken':       [(None, None), ],
             'mollusk':      [(None, None), ],
             'tentacle':     [('hand', None), ],
             'tentacles':    [('hands', None), ],
-            'squid':        [('kidding', 'squidding'), ],
             }
 
     # TODO: Allow choosing pun list on object creation
