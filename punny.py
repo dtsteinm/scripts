@@ -121,6 +121,7 @@ class PunGenerator:
         # Because a specified replacement word (best_pun[1]) can
         # contain punctuation, this test could fail when we want
         # it to pass when checking the full string.
+        # FIXME: Replacement of partial word matches
         if str(best_pun[1])[0].isalpha():
             pun = self.string.replace(to_replace, best_pun[1])
         else:
@@ -131,7 +132,7 @@ class PunGenerator:
         '''Add a new pun to the list of available puns.'''
 
         # Add a new pun to the dictionary.
-        if self.puns[pun]:
+        if pun in self.puns:
             self.puns[pun] += [(word, replace)]
             for i, t in enumerate(self.puns[pun]):
                 if self.puns[pun][i] == (None, None):
