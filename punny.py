@@ -67,14 +67,13 @@ class PunGenerator:
         mark = [x for x in list(punc) if x in string]
         # Clean unwanted punctuation, assuming all punctuation was at
         # the end of the string.
+        # FIXME: Will likely break on words like "can't"
         string = string[:(-len(mark) if len(mark) != 0 else None)]
+        print string
 
         # Store the currently best pun option, and it's Levenshtein
         # ratio (0-1) in a tuple to compare it to later options.
         best_pun = (None, None)
-
-        # Later re-combinanition of the words and punctuation.
-        join = lambda w, p: ''.join([w] + p)
 
         # Compare each pun option; better puns replace earlier options.
         for pun in self.puns:
@@ -83,14 +82,14 @@ class PunGenerator:
             for word, replace in self.puns[pun]:
                 if string == word:
                     if replace is None:
-                        return join(pun, mark), 1
+                        return pun, 1
                     else:
-                        return join(pun, mark), join(replace, mark)
+                        return pun, replace
             # Calculate a diff on two strings, without considering
             # anything as junk, and return the ratio.
             current_ratio = seqmatch(None, pun, string).ratio()
             if current_ratio > best_pun[1]:
-                best_pun = join(pun, mark), current_ratio
+                best_pun = pun, current_ratio
 
         # Return both the pun itself, and the ratio so that
         # generate_pun() can find the best pun for a phrase.
@@ -122,15 +121,14 @@ class PunGenerator:
                 best_pun = new_pun
                 to_replace = word
 
-        # Use a defined replacement word if available, otherwise
-        # just use the dictionary keyword.
-
         # In order to avoid matching partial words, we're going to
         # specify the beginning and end of the string to match.
         to_replace = to_replace.join((r'\b',) * 2)
 
-        # Because a specified replacement word (best_pun[1]) can
-        # contain punctuation, this test could fail when we want
+        # Use a defined replacement word if available, otherwise
+        # just use the dictionary keyword.
+        # NOTE: Because a specified replacement word (best_pun[1])
+        # can contain punctuation, this test could fail when we want
         # it to pass when checking the full string.
         if str(best_pun[1])[0].isalpha():
             pun = sub(to_replace, best_pun[1], self.string)
