@@ -9,10 +9,11 @@
 '''Generate puns for a given phrase.'''
 from difflib import SequenceMatcher as seqmatch
 from string import punctuation as punc
+from re import sub
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 __license__ = 'WTFPL'
 
 
@@ -22,17 +23,22 @@ class PunGenerator:
     # TODO: Add other pun dictionaries
     # TODO: Add automatic words for other puns
     squid = {
-            'ink':      [('going', 'goink'), ('invade', 'inkvade'),
-                         ('thinking', 'inking')],
-            'fin':      [('even', 'efin'), ],
-            'gill':     [(None, None), ],
-            'kelp':     [('hell', None), ('heck', None)],
-            'keel':     [(None, None), ],
-            'beak':     [('mouth', None), ('face', None)],
-            'shrimp':   [(None, None), ],
-            'kraken':   [(None, None), ],
-            'mollusk':  [(None, None), ],
-            'squid':    [('kidding', 'squidding'), ],
+            'ink':          [('going', 'goink'),
+                             ('invade', 'inkvade'),
+                             ('thinking', 'inking')],
+            'fin':          [('even', 'efin'), ],
+            'gill':         [(None, None), ],
+            'kelp':         [('hell', None),
+                             ('heck', None)],
+            'keel':         [(None, None), ],
+            'beak':         [('mouth', None),
+                             ('face', None)],
+            'shrimp':       [(None, None), ],
+            'kraken':       [(None, None), ],
+            'mollusk':      [(None, None), ],
+            'tentacle':     [('hand', None), ],
+            'tentacles':    [('hands', None), ],
+            'squid':        [('kidding', 'squidding'), ],
             }
 
     # TODO: Allow choosing pun list on object creation
@@ -118,14 +124,18 @@ class PunGenerator:
 
         # Use a defined replacement word if available, otherwise
         # just use the dictionary keyword.
+
+        # In order to avoid matching partial words, we're going to
+        # specify the beginning and end of the string to match.
+        to_replace = to_replace.join((r'\b',) * 2)
+
         # Because a specified replacement word (best_pun[1]) can
         # contain punctuation, this test could fail when we want
         # it to pass when checking the full string.
-        # FIXME: Replacement of partial word matches
         if str(best_pun[1])[0].isalpha():
-            pun = self.string.replace(to_replace, best_pun[1])
+            pun = sub(to_replace, best_pun[1], self.string)
         else:
-            pun = self.string.replace(to_replace, best_pun[0])
+            pun = sub(to_replace, best_pun[0], self.string)
         return pun.capitalize()
 
     def add_pun(self, pun, word=None, replace=None):
