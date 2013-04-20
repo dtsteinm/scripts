@@ -16,13 +16,14 @@ import tempfile as temp
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.9.2'
+__version__ = '0.9.3'
 __license__ = 'WTFPL'
 
 
 # walk looks for directories containing mp3 files,
 # and calls mp3gain() when we have something to do.
 # TODO: Add messages displaying progress of entire file structure.
+# TODO: Add vorbisgain and aacgain support, look at python-rgain
 def walk(start_dir=os.getcwd(), **kwargs):
     """Traverses the filesystem structure, looking for directories """ \
             """containing MP3 files, and calls mp3gain() when appropriate.
@@ -97,7 +98,7 @@ def walk(start_dir=os.getcwd(), **kwargs):
                     # Call mp3gain when we hit a directory containing MP3s.
                     # Passes options as expanded dictionary mapping.
                     # TODO: Look into mutli-threading to speed up this process.
-                    if re.match(r'^.*\.mp3$', file_) is not None:
+                    if '.mp3' in os.path.splitext(file_):
                         mp3gain(basedir, **options)
                         # Raise our flag
                         flag = True
