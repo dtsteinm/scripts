@@ -13,7 +13,7 @@ from re import sub
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 __license__ = 'WTFPL'
 
 
@@ -69,7 +69,6 @@ class PunGenerator:
         # the end of the string.
         # FIXME: Will likely break on words like "can't"
         string = string[:(-len(mark) if len(mark) != 0 else None)]
-        print string
 
         # Store the currently best pun option, and it's Levenshtein
         # ratio (0-1) in a tuple to compare it to later options.
