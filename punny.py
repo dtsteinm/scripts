@@ -159,6 +159,21 @@ class PunGenerator:
                 '''manner.'''
         pass
 
+    # TODO: write dump/load/update
+    def dump(self, filename):
+        '''Save the current pun dictionary to the specified file.'''
+        pass
+
+    def load(self, filename):
+        '''Load a pun dictionary from the specified pickle file.'''
+        # Overwrite or add new values?
+        pass
+
+    def update(self, filename):
+        '''Update the current pun dictionary with values from the '''\
+                '''specified pickle file.'''
+        pass
+
 
 # TODO: Add command line stuff and any exceptions down here
 class Error(Exception):
