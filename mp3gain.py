@@ -71,7 +71,7 @@ def walk(start_dir=os.getcwd(), **kwargs):
             raise DirectoryError(start_dir)
 
         # Anonymous function to check for dotfiles
-        dot_check = lambda name: re.match(r'^\..*$', name)
+        dot_check = lambda name: name.startswith('.')
 
         # Iterate filesystem structure, checking each list of files contained
         # in each directory for anything that resembles an MP3 file.
