@@ -151,7 +151,6 @@ def _try_delete(basedir, file_, total_size, confirm):
         if not os.path.isfile(absolute_file):
             raise FileError(absolute_file)
 
-        # TODO: Confirm with user (optionally)
         if confirm:
             if raw_input('Delete {}? [y/N]: '.format(file_)).lower()\
                     not in ['yes', 'yeah', 'yea', 'ye', 'y']:
