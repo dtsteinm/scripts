@@ -90,33 +90,9 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
                     # file_ does not reference an existing file,
                     # so let's try deleting it.
                     else:
+                        total_size = _try_delete(basedir,
+                                file_, total_size)
 
-                        # Try block for deleting the current file_.
-                        try:
-
-                            # Append the current filename to the current
-                            # basedir, using the os.sep, to create an
-                            # absolute path to the file_,
-                            # f.e. '/home/user/.vim/undo/%path%to%file.ext'
-                            absolute_file = os.path.join(basedir, file_)
-
-                            # If the file was already removed by something
-                            # else, raise a FileError with the path.
-                            if not os.path.isfile(absolute_file):
-                                raise FileError(absolute_file)
-
-                            # Add the size of the file to be deleted to the
-                            # size of the files that have already been removed.
-                            total_size += os.path.getsize(absolute_file)
-
-                            # Delete the vimfile from the filesystem.
-                            os.remove(absolute_file)
-
-                        # Catch the FileError, but don't do anything with it.
-                        except FileError:
-                            pass
-
-                        # End of try block for deleting the current file_.
                     # End of file_ checking if-elif-else block.
                 # End of files for loop.
             # End of 'undo'/'view' if block.
@@ -142,6 +118,55 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
         pass
 
     # End of outer try block.
+# End of prune function
+
+
+def _try_delete(basedir, file_, total_size):
+    '''Function that performs the actual deletion of files.
+
+    Attributes:
+        basedir -- directory in which file exists
+        file_ -- filename
+        total_size -- size of files deleted so far
+
+    Returns:
+        total_size -- total_size plus size of file_
+    '''
+
+    # Try block for deleting the current file_.
+    try:
+
+        # Append the current filename to the current
+        # basedir, using the os.sep, to create an
+        # absolute path to the file_,
+        # f.e. '/home/user/.vim/undo/%path%to%file.ext'
+        absolute_file = os.path.join(basedir, file_)
+
+        # If the file was already removed by something
+        # else, raise a FileError with the path.
+        if not os.path.isfile(absolute_file):
+            raise FileError(absolute_file)
+
+        # TODO: Confirm with user (optionally)
+
+        # Add the size of the file to be deleted to the
+        # size of the files that have already been removed.
+        total_size += os.path.getsize(absolute_file)
+
+        # Delete the vimfile from the filesystem.
+        os.remove(absolute_file)
+
+        # Pass the new total_size back to the prune block.
+        return total_size
+
+    # Catch the FileError, but don't do anything with it.
+    except FileError:
+        pass
+
+    # End of try block for deleting the current file_
+# End of _try_delete function
+
+# End of logic
 
 
 # Begin customized module Exceptions.
