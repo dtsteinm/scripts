@@ -12,14 +12,18 @@ import os
 
 __all__ = ['prune']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.3.1'
+__version__ = '0.4'
 __license__ = 'WTFPL'
 
 
-def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
+def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim'), confirm=False):
 
     # TODO: Rewrite doctests to not output on system() calls.
     """Detects unusable undofiles in user's Vim undodir.
+
+    Attributes:
+        start_dir -- vim directory
+        confirm -- confirm deletion of each file (Default: False)
 
     >>> os.system('dd if=/dev/zero of=' + os.getenv('HOME') + """ \
             """'/.vim/undo/test.vim bs=1024 count=1')
@@ -91,7 +95,7 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
                     # so let's try deleting it.
                     else:
                         total_size = _try_delete(basedir,
-                                file_, total_size)
+                                file_, total_size, confirm)
 
                     # End of file_ checking if-elif-else block.
                 # End of files for loop.
@@ -121,7 +125,7 @@ def prune(start_dir=os.path.join(os.getenv('HOME'), '.vim')):
 # End of prune function
 
 
-def _try_delete(basedir, file_, total_size):
+def _try_delete(basedir, file_, total_size, confirm):
     '''Function that performs the actual deletion of files.
 
     Attributes:
@@ -148,6 +152,10 @@ def _try_delete(basedir, file_, total_size):
             raise FileError(absolute_file)
 
         # TODO: Confirm with user (optionally)
+        if confirm:
+            if raw_input('Delete {}? [y/N]: '.format(file_)).lower()\
+                    not in ['yes', 'yeah', 'yea', 'ye', 'y']:
+                        return total_size
 
         # Add the size of the file to be deleted to the
         # size of the files that have already been removed.
@@ -161,7 +169,7 @@ def _try_delete(basedir, file_, total_size):
 
     # Catch the FileError, but don't do anything with it.
     except FileError:
-        pass
+        return total_size
 
     # End of try block for deleting the current file_
 # End of _try_delete function
