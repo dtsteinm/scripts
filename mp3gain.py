@@ -21,7 +21,6 @@ __license__ = 'WTFPL'
 
 # walk looks for directories containing mp3 files,
 # and calls mp3gain() when we have something to do.
-# TODO: Add messages displaying progress of entire file structure.
 # TODO: Add vorbisgain and aacgain support, look at python-rgain
 def walk(start_dir=os.getcwd(), **kwargs):
     """Traverses the filesystem structure, looking for directories """ \
@@ -59,7 +58,9 @@ def walk(start_dir=os.getcwd(), **kwargs):
     # Flag to indicate work was done.
     flag = False
 
-    # TODO: Allow user to break out of entire program, like <C-c><C-c>
+    # Anonymous function to check for dotfiles
+    dot_check = lambda name: name.startswith('.')
+
     try:
         # Check to see if the mp3gain utility is installed.
         if sp.call('/usr/bin/mp3gain -v', shell=True,
@@ -69,9 +70,6 @@ def walk(start_dir=os.getcwd(), **kwargs):
         # Check to make sure we're working in a real directory.
         if os.path.isdir(start_dir) is False:
             raise DirectoryError(start_dir)
-
-        # Anonymous function to check for dotfiles
-        dot_check = lambda name: name.startswith('.')
 
         # Need to get a count of how many directories we're traveling.
         # We also have to count which directory we are in.
@@ -117,8 +115,10 @@ def walk(start_dir=os.getcwd(), **kwargs):
                     # TODO: Look into mutli-threading to speed up this process.
                     if '.mp3' == os.path.splitext(file_)[1]:
                         mp3gain(basedir, **options)
+
                         # Raise our flag
                         flag = True
+
                         # This directory is done, so we can go to the next one.
                         break
 
@@ -126,9 +126,16 @@ def walk(start_dir=os.getcwd(), **kwargs):
                 # running?), just go on to the next one on our walk
                 except DirectoryError:
                     pass
+                # TODO: Allow user to break out of entire program,
+                # like <C-c><C-c>
+                # except:
+                    # print '\nQuitting...'
+                    # return 1
                 finally:
                     # The directories add up.
                     count += 1
+                    # FIXME: Breaks completely on directories without
+                    # MP3 files.
                     print_progress(count, total)
 
                 # End of inner isdir() try...except
@@ -231,14 +238,6 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         # TODO: os.path.abspath/normpath
         dirbase = os.path.basename(directory)
 
-        # FIXME: Don't really nead this stuff with progressbar
-        # Display message when we start a directory
-        # print 'Starting:', dirbase,
-        # Flush stdout in order to force Python to print the previous
-        # line with a trailing comma/no newline; otherwise, it waits
-        # for the rest of the line, which, is usually a return.
-        # sys.stdout.flush()
-
         # mp3gain can produce a lot of output, and sp.PIPE only takes
         # about 65kb of data before it shuts down. This TemporaryFile
         # object should take as much data as we can through at it,
@@ -255,7 +254,6 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         if proc.poll() is 127:
             raise NoExecutableError()
         # Return code of 1 indicates no files were processed.
-        # TODO: Check for mpeg layer I files
         if proc.poll() is 1:
             raise NoMP3Error(directory)
         # If /usr/bin/mp3gain returned something other
@@ -277,6 +275,9 @@ def mp3gain(directory=os.getcwd(), **kwargs):
     # Catch KeyboardInterrupts as a cue to cancel processing the current dir.
     except KeyboardInterrupt:
         print '\rSkipping: {}'.format(dirbase)
+
+        # Sleep for a fraction of a second to let user break outermost loop.
+        # sleep(0.1)
 
     # TODO: Has to be some way to suppress this output when mp3gain()
     # is not called from walk().
