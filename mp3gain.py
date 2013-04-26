@@ -9,15 +9,13 @@
 """Recursively tag MP3 files with ReplayGain attributes """ \
         """using the mp3gain utility."""
 import os
-# import re
-# import sys
 from math import floor
 import subprocess as sp
 import tempfile as temp
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
-__version__ = '0.9.3'
+__version__ = '0.9.4'
 __license__ = 'WTFPL'
 
 
@@ -74,20 +72,17 @@ def walk(start_dir=os.getcwd(), **kwargs):
         # Anonymous function to check for dotfiles
         dot_check = lambda name: name.startswith('.')
 
-        # start_dir should be the first directory we encounter,
-        # but just in cases, let's make an initial directory
-        # count is a shot in the dark. 100 seems like a
-        # decent place to start.
-        # total_dirs = 100
+        # Need to get a count of how many directories we're traveling.
         # We also have to count which directory we are in.
-        total = 1
+        total = 0
         count = 0
 
-        # Once we've found start_dir, we can get an accurate count.
-        # We need this as a float, otherwise the math will be off.
-        # if basedir is start_dir:
+        # Let's make an initial directory count of the files
+        # Pre-emptive walk gathering the numbers of directories
+        # (info[1] is equivalent to pathnames in the next for loop).
         for info in os.walk(start_dir):
             total += len(info[1])
+        # We need this as a float, otherwise the math will be off.
         total = float(total)
 
         # Iterate filesystem structure, checking each list of files contained
@@ -95,11 +90,13 @@ def walk(start_dir=os.getcwd(), **kwargs):
         for basedir, pathnames, files in os.walk(start_dir):
 
             # Better safe than sorry: let's verify it's a real directory.
+            # And since it was skipped, we can forget about it.
             if os.path.isdir(basedir) is False:
                 total -= 1
                 raise DirectoryError(basedir)
 
             # Skip hidden directories (dotfiles)
+            # Same as above with hidden files.
             for pathname in pathnames:
                 if dot_check(pathname):
                     total -= 1
@@ -111,9 +108,7 @@ def walk(start_dir=os.getcwd(), **kwargs):
                 try:
 
                     # Skip to next file_ on hidden files
-                    # and delete it from our total
                     if dot_check(file_):
-                        # total -= 1
                         continue
 
                     # Call mp3gain when we hit a directory containing MP3s.
@@ -123,8 +118,6 @@ def walk(start_dir=os.getcwd(), **kwargs):
                         mp3gain(basedir, **options)
                         # Raise our flag
                         flag = True
-                        # The directories add up.
-                        # count += 1
                         # This directory is done, so we can go to the next one.
                         break
 
@@ -132,15 +125,12 @@ def walk(start_dir=os.getcwd(), **kwargs):
                 # running?), just go on to the next one on our walk
                 except DirectoryError:
                     pass
-                else: count += 1
                 finally:
-                    # count += 1
-                    if count != 0:
-                        print_progress(count, total)
+                    # The directories add up.
+                    count += 1
+                    print_progress(count, total)
 
-                # count += 1
                 # End of inner isdir() try...except
-            # total -= 1
             # End of files loop
         # End of os.walk() loop
 
@@ -299,18 +289,27 @@ def mp3gain(directory=os.getcwd(), **kwargs):
     finally:
         tmp.close()
 
-
     # End of isdir()|Popen() try...except block
 # End of mp3gain() function
 
+
 def print_progress(current, total, length=50):
     '''Prints a simple progress bar indicating progress.'''
+    # TODO: Add a doctest
 
+    # Calculates what percentage of work has been finished.
     ratio = (current / total)
-    size = int(floor(ratio * length))
+
+    # Determines how long the line must be to represent work done.
+    # Subract one for our greater than symbol.
+    size = int(floor(ratio * length)) - 1
+
+    # Prints our bar and a percentage of progress.
+    # The trailing null string and comma ensures a new line is not printed.
     print '\r{0:000.2f}% |{1}|'.format(ratio * 100, '=' * size +
-            ' ' * (length - size)) + '',
-    # End of print_progress function
+            '>' + ('-' * (length - size))) + '',
+
+# End of print_progress function
 
 # End of module logic
 
