@@ -9,7 +9,7 @@
 """Recursively tag MP3 files with ReplayGain attributes """ \
         """using the mp3gain utility."""
 import os
-import re
+# import re
 import sys
 import subprocess as sp
 import tempfile as temp
@@ -30,7 +30,7 @@ def walk(start_dir=os.getcwd(), **kwargs):
 
     Attributes:
         start_dir -- root directory to begin looking in
-        force -- force recalculation on all files
+        force -- force recalculation on all files and assume mp3s
         skip -- skip ReplayGain calculation for files with existing tags
         clear -- delete ReplayGain tags
 
@@ -51,6 +51,7 @@ def walk(start_dir=os.getcwd(), **kwargs):
     options = {}
     if force:
         options['recalc'] = True
+        options['assume'] = True
     if skip:
         options['skip'] = True
     if clear:
@@ -154,6 +155,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
 
     Attributes:
       directory -- Directory on which to apply ReplayGain
+      assume -- Assume all files are MPEG Layer IIIs
       allowclip -- Ignore warnings about track clipping (False)
       noclip -- Automatically lower gain to avoid clipping (True)
       recalc -- Force re-calculation of ReplayGain tags (False)
@@ -165,7 +167,8 @@ def mp3gain(directory=os.getcwd(), **kwargs):
     # Assign attributes from kwargs, applying a default value as needed.
     # TODO: Look into other possible options, like 'undo'
     # TODO: User may prefer APE over ID3v2, for whatever reason
-    allowclip = kwargs.pop('noclip', False)
+    assume = kwargs.pop('assume', True)
+    allowclip = kwargs.pop('allowclip', False)
     noclip = kwargs.pop('noclip', True)
     recalc = kwargs.pop('recalc', False)
     delete = kwargs.pop('delete', False)
@@ -180,6 +183,9 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         # Set our command and options to use here.
         # Make changes to IDv3 tags only
         command = '/usr/bin/mp3gain -s i '
+        # Don't check for mislabed MPEG Layer I or II files
+        if assume:
+            command += '-f '
         # Recalculate ReplayGain, regardless of current RG tags
         if recalc:
             command += '-s r '
