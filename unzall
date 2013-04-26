@@ -1,8 +1,0 @@
-#!/bin/bash
-
-rename -v 's/\ /_/g' *.zip 	# Replace " " w/"_" in zip filenames
-
-for z in *.zip; do		# For every file ending in .zip
-d=`basename $z .zip`		# Create a new dir w/out the extension
-mkdir $d && unzip $z -d $d	# Extract the contents of the archive
-done				# into the new directory
