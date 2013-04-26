@@ -113,6 +113,7 @@ def mkpls(directory, file_list):
     # more human readable.
     # TODO: Perform more intelligent title extraction
     #       (comparison of start_dir against directory?)
+    #       take a look at normpath/abspath
     name = os.path.basename(directory)
     title = re.sub('[._]', ' ', name)
 
@@ -350,4 +351,4 @@ if __name__ == "__main__":
         makeplaylist(playlist_type=args.playlist_type)
 
 
-# vim: set ts=4 sts=4 sw=4 et:
+# vim: set ts=4 sts=4 sw=4 et tw=79:

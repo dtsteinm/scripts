@@ -6,6 +6,8 @@
 # as published by Sam Hocevar. See the COPYING file for more details.
 # Last updated: March 28, 2013
 
+# TODO: Add function to refactor files
+
 """Detects unusable undo and view files in Vim directory; for """ \
         """example user has moved or deleted previously edited files."""
 import os
@@ -231,4 +233,4 @@ if __name__ == '__main__':
     else:
         prune()
 
-# vim: set ts=4 sts=4 sw=4 et:
+# vim: set ts=4 sts=4 sw=4 et tw=79:
