@@ -10,9 +10,9 @@
         """using the mp3gain utility."""
 import os
 # import re
-import sys
 import subprocess as sp
 import tempfile as temp
+from sys import stdout
 
 __all__ = ['walk', 'mp3gain']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
@@ -212,7 +212,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         # Flush stdout in order to force Python to print the previous
         # line with a trailing comma/no newline; otherwise, it waits
         # for the rest of the line, which, is usually a return.
-        sys.stdout.flush()
+        stdout.flush()
 
         # mp3gain can produce a lot of output, and sp.PIPE only takes
         # about 65kb of data before it shuts down. This TemporaryFile
