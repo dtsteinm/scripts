@@ -9,8 +9,9 @@
 """Recursively tag MP3 files with ReplayGain attributes """ \
         """using the mp3gain utility."""
 import os
-import re
-import sys
+# import re
+# import sys
+from math import floor
 import subprocess as sp
 import tempfile as temp
 
@@ -73,17 +74,35 @@ def walk(start_dir=os.getcwd(), **kwargs):
         # Anonymous function to check for dotfiles
         dot_check = lambda name: name.startswith('.')
 
+        # start_dir should be the first directory we encounter,
+        # but just in cases, let's make an initial directory
+        # count is a shot in the dark. 100 seems like a
+        # decent place to start.
+        # total_dirs = 100
+        # We also have to count which directory we are in.
+        total = 1
+        count = 0
+
+        # Once we've found start_dir, we can get an accurate count.
+        # We need this as a float, otherwise the math will be off.
+        # if basedir is start_dir:
+        for info in os.walk(start_dir):
+            total += len(info[1])
+        total = float(total)
+
         # Iterate filesystem structure, checking each list of files contained
         # in each directory for anything that resembles an MP3 file.
         for basedir, pathnames, files in os.walk(start_dir):
 
             # Better safe than sorry: let's verify it's a real directory.
             if os.path.isdir(basedir) is False:
+                total -= 1
                 raise DirectoryError(basedir)
 
             # Skip hidden directories (dotfiles)
             for pathname in pathnames:
                 if dot_check(pathname):
+                    total -= 1
                     pathnames.remove(pathname)
 
             # We need to check each file in the current basedir,
@@ -92,16 +111,20 @@ def walk(start_dir=os.getcwd(), **kwargs):
                 try:
 
                     # Skip to next file_ on hidden files
+                    # and delete it from our total
                     if dot_check(file_):
+                        # total -= 1
                         continue
 
                     # Call mp3gain when we hit a directory containing MP3s.
                     # Passes options as expanded dictionary mapping.
                     # TODO: Look into mutli-threading to speed up this process.
-                    if '.mp3' in os.path.splitext(file_):
+                    if '.mp3' == os.path.splitext(file_)[1]:
                         mp3gain(basedir, **options)
                         # Raise our flag
                         flag = True
+                        # The directories add up.
+                        # count += 1
                         # This directory is done, so we can go to the next one.
                         break
 
@@ -109,8 +132,15 @@ def walk(start_dir=os.getcwd(), **kwargs):
                 # running?), just go on to the next one on our walk
                 except DirectoryError:
                     pass
+                else: count += 1
+                finally:
+                    # count += 1
+                    if count != 0:
+                        print_progress(count, total)
 
+                # count += 1
                 # End of inner isdir() try...except
+            # total -= 1
             # End of files loop
         # End of os.walk() loop
 
@@ -122,6 +152,8 @@ def walk(start_dir=os.getcwd(), **kwargs):
     # If mp3gain is not installed where we expected it, nothing to do.
     except NoExecutableError:
         print 'Quitting...'
+
+    # User hit Ctrl-C outside of
 
     # Any other errors encountered were too much for us to handle.
     except:
@@ -140,6 +172,7 @@ def walk(start_dir=os.getcwd(), **kwargs):
     # try block has finished. (currently empty)
     finally:
         pass
+        # print total, count
 
     # End of outer isdir() try...except block
 # End of walk() function
@@ -199,14 +232,15 @@ def mp3gain(directory=os.getcwd(), **kwargs):
             command += '-p '
         command += '*.mp3'
 
+        # TODO: os.path.abspath/normpath
         dirbase = os.path.basename(directory)
 
         # Display message when we start a directory
-        print 'Starting:', dirbase,
+        # print 'Starting:', dirbase,
         # Flush stdout in order to force Python to print the previous
         # line with a trailing comma/no newline; otherwise, it waits
         # for the rest of the line, which, is usually a return.
-        sys.stdout.flush()
+        # sys.stdout.flush()
 
         # mp3gain can produce a lot of output, and sp.PIPE only takes
         # about 65kb of data before it shuts down. This TemporaryFile
@@ -224,6 +258,7 @@ def mp3gain(directory=os.getcwd(), **kwargs):
         if proc.poll() is 127:
             raise NoExecutableError()
         # Return code of 1 indicates no files were processed.
+        # TODO: Check for mpeg layer I files
         if proc.poll() is 1:
             raise NoMP3Error(directory)
         # If /usr/bin/mp3gain returned something other
@@ -257,7 +292,8 @@ def mp3gain(directory=os.getcwd(), **kwargs):
 
     # Everything went according to plan.
     else:
-        print '\rFinished with:', dirbase,
+        pass
+        # print '\rFinished with:', dirbase,
 
     # Close our temporary file as we leave the try block.
     finally:
@@ -266,6 +302,15 @@ def mp3gain(directory=os.getcwd(), **kwargs):
 
     # End of isdir()|Popen() try...except block
 # End of mp3gain() function
+
+def print_progress(current, total, length=50):
+    '''Prints a simple progress bar indicating progress.'''
+
+    ratio = (current / total)
+    size = int(floor(ratio * length))
+    print '\r{0:000.2f}% |{1}|'.format(ratio * 100, '=' * size +
+            ' ' * (length - size)) + '',
+    # End of print_progress function
 
 # End of module logic
 
@@ -354,4 +399,4 @@ if __name__ == '__main__':
     else:
         walk()
 
-# vim: set ts=4 sts=4 sw=4 et:
+# vim: set ts=4 sts=4 sw=4 et tw=79:
