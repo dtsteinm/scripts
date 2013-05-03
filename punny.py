@@ -10,6 +10,7 @@
 from difflib import SequenceMatcher as seqmatch
 from string import punctuation as punc
 from re import sub
+from pickle import Pickler, Unpickler
 
 __all__ = ['PunGenerator']
 __author__ = 'Dylan Steinmetz <dtsteinm@gmail.com>'
@@ -49,6 +50,7 @@ class PunGenerator:
 
     # TODO: Allow choosing pun list on object creation
     def __init__(self):
+        '''Initialize the PunGenerator with a dictionary of puns.'''
         self.puns = self.squid
 
     def select_pun(self, string):
@@ -100,6 +102,7 @@ class PunGenerator:
         # generate_pun() can find the best pun for a phrase.
         return best_pun
 
+    # TODO: refactor to just 'generate()'
     def generate_pun(self, string):
         '''Given a phrase, replace the best pun possibility.'''
         # TODO: Multiple puns per line
@@ -153,26 +156,45 @@ class PunGenerator:
         else:
             self.puns[pun] = [(word, replace)]
 
-    # TODO: PrettyPrint-ing of puns
+    # TODO: Write print_puns
     def print_puns(self):
-        '''Display the current pun dictionary, in a prettily formatted ''' \
-                '''manner.'''
+        #'''Display the current pun dictionary, in a prettily formatted ''' \
+        #        '''manner.'''
         pass
 
-    # TODO: write dump/load/update
-    def dump(self, filename):
+    def save_dict(self, filename):
         '''Save the current pun dictionary to the specified file.'''
-        pass
+        with open(filename, 'w') as f:
+            pickle = Pickler(f)
+            pickle.dump(self.puns)
 
-    def load(self, filename):
+    def load_dict(self, filename):
         '''Load a pun dictionary from the specified pickle file.'''
         # Overwrite or add new values?
-        pass
+        with open(filename, 'r') as f:
+            pickle = Unpickler(f)
+            self.puns = pickle.load()
 
-    def update(self, filename):
+    def update_dict(self, filename):
         '''Update the current pun dictionary with values from the '''\
                 '''specified pickle file.'''
-        pass
+        with open(filename, 'r') as f:
+            pickle = Unpickler(f)
+            new_puns = pickle.load()
+
+        for pun in new_puns:
+            try:
+                # Results in a KeyError if 'pun' doesn't exist in dictionary.
+                self.puns[pun] += new_puns[pun]
+            except KeyError:
+                self.puns[pun] = new_puns[pun]
+
+            # TODO: Check for duplicates
+            # Check existing dict entries for a NoneType tuple the
+            # self.puns[pun] list (first entry in first tuple is 'None').
+            if len(self.puns[pun]) > 1 and self.puns[pun][0][0] is None:
+                # FIXME: Does not seem to delete...?
+                del self.puns[pun][0]
 
 
 # TODO: Add command line stuff and any exceptions down here
